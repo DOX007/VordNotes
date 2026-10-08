@@ -35,6 +35,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.flow.MutableStateFlow
 import com.mhss.app.domain.visionOcrPrompt
+import com.mhss.app.ui.components.notes.NotePin
 
 @KoinViewModel
 class NoteDetailsViewModel(
@@ -110,7 +111,8 @@ class NoteDetailsViewModel(
                 folder = folder,
                 folders = folders,
                 readingMode = note != null,
-                pinned = note?.pinned ?: false
+                pinned = note?.pinned ?: false,
+                pins = note?.pins.orEmpty().toSet()
             )
         }
     }
@@ -149,6 +151,14 @@ class NoteDetailsViewModel(
 
             is NoteDetailsEvent.UpdatePinned -> {
                 noteUiState = noteUiState.copy(pinned = event.pinned)
+                saveNoteWithDebounce()
+            }
+
+            is NoteDetailsEvent.TogglePin -> {
+                val updatedPins = noteUiState.pins.toMutableSet().apply {
+                    if (!add(event.pinId)) remove(event.pinId)
+                }.toSet()
+                noteUiState = noteUiState.copy(pins = updatedPins)
                 saveNoteWithDebounce()
             }
 
@@ -241,6 +251,7 @@ class NoteDetailsViewModel(
 
         val folderId = noteUiState.folder?.id
         val pinned = noteUiState.pinned
+        val pins = noteUiState.pins.toList()
 
         if (noteUiState.note == null) {
             if (title.isNotBlank() || content.isNotBlank()) {
@@ -253,7 +264,8 @@ class NoteDetailsViewModel(
                         folderId = folderId,
                         pinned = pinned,
                         createdDate = now(),
-                        updatedDate = now()
+                        updatedDate = now(),
+                        pins = pins
                     )
                     val id = addNote(note)
                     noteUiState = noteUiState.copy(note = note.copy(id = id.toInt()))
@@ -267,14 +279,16 @@ class NoteDetailsViewModel(
                 currentNote.title != title ||
                 currentNote.content != content ||
                 currentNote.folderId != folderId ||
-                currentNote.pinned != pinned
+                currentNote.pinned != pinned ||
+                currentNote.pins != pins
             ) {
                 val newNote = currentNote.copy(
                     title = title,
                     content = content,
                     folderId = folderId,
                     pinned = pinned,
-                    updatedDate = now()
+                    updatedDate = now(),
+                    pins = pins
                 )
                 updateNote(newNote)
                 noteUiState = noteUiState.copy(note = newNote)
@@ -289,7 +303,8 @@ class NoteDetailsViewModel(
         val readingMode: Boolean = false,
         val folders: List<NoteFolder> = emptyList(),
         val folder: NoteFolder? = null,
-        val pinned: Boolean = false
+        val pinned: Boolean = false,
+        val pins: Set<String> = emptySet()
     )
 
     data class AiState(
