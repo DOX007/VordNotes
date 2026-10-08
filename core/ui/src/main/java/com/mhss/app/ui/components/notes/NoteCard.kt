@@ -78,7 +78,7 @@ fun NoteCard(
                 NotePinsRow(
                     pinIds = note.pins,
                     modifier = Modifier.fillMaxWidth(),
-                    iconSize = 20.dp
+                    iconSize = 34.dp
                 )
             }
             Spacer(Modifier.height(8.dp))

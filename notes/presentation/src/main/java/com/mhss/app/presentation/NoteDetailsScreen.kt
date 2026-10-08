@@ -81,6 +81,7 @@ import android.content.Intent
 import android.app.Activity
 import android.graphics.Bitmap
 import com.mhss.app.core.util.toBase64
+import com.mhss.app.ui.components.notes.NotePinsRow
 
 
 
@@ -113,6 +114,7 @@ fun NoteDetailsScreen(
     val context = LocalContext.current
     val keyboardController = LocalSoftwareKeyboardController.current
 
+    val selectedPins = state.pins.toList()
     val title = viewModel.title
     val content = viewModel.content
     val pinned = state.pinned
@@ -123,6 +125,8 @@ fun NoteDetailsScreen(
     val aiEnabled by viewModel.aiEnabled.collectAsStateWithLifecycle()
     val aiState = viewModel.aiState
     val showAiSheet = aiState.showAiSheet
+
+    var showPinsDialog by rememberSaveable { mutableStateOf(false) }
 
     // === NYTT: OCR med språkval, preprocessing och CameraX ===
     var isOcrRunning by rememberSaveable { mutableStateOf(false) }
@@ -388,7 +392,7 @@ fun NoteDetailsScreen(
     }
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.6f),
-        contentColor   = MaterialTheme.colorScheme.onBackground,
+        contentColor = MaterialTheme.colorScheme.onBackground,
         topBar = {
             MyBrainAppBar(
                 title = "",
@@ -397,7 +401,6 @@ fun NoteDetailsScreen(
                         modifier = Modifier.horizontalScroll(rememberScrollState()),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // 🔊 HÖGTALAR-IKON
                         TTSSpeakerIcon(
                             text = content,
                             isPlaying = isTTSPlaying,
@@ -408,18 +411,17 @@ fun NoteDetailsScreen(
                             navController.navigate(
                                 Screen.NotesScreen(
                                     addNote = true,
-                                    prefillNoteTitle = title   // <- 'title' kommer redan från NoteDetailsViewModel
+                                    prefillNoteTitle = title
                                 )
                             )
                         }) {
                             Icon(
                                 painter = painterResource(R.drawable.ic_plain_text),
-                                contentDescription = stringResource(R.string.add_note) // använd din befintliga sträng för "Ny anteckning" om du har
+                                contentDescription = stringResource(R.string.add_note)
                             )
                         }
 
                         IconButton(onClick = {
-                            // Öppnar Tasks-skärmen och förfyller titel med vårdtagarens namn
                             navController.navigate(
                                 Screen.TasksScreen(
                                     addTask = true,
@@ -468,6 +470,7 @@ fun NoteDetailsScreen(
                                 stringResource(R.string.share_note),
                             )
                         }
+
                         DropdownMenu(
                             expanded = showShareMenu,
                             onDismissRequest = { showShareMenu = false }
@@ -488,15 +491,13 @@ fun NoteDetailsScreen(
                             }
                         }
 
-                        IconButton(onClick = {
-                            viewModel.onEvent(NoteDetailsEvent.UpdatePinned(!pinned))
-                        }) {
+
+                        IconButton(onClick = { showPinsDialog = true }) {
                             Icon(
-                                painter = if (pinned) painterResource(id = R.drawable.ic_pin_filled)
-                                else painterResource(id = R.drawable.ic_pin),
-                                contentDescription = stringResource(R.string.pin_note),
+                                painter = painterResource(id = R.drawable.ic_pin_filled),
+                                contentDescription = "Pins",
                                 modifier = Modifier.size(24.dp),
-                                tint = Orange
+                                tint = Color.Red
                             )
                         }
 
@@ -530,6 +531,16 @@ fun NoteDetailsScreen(
                 shape = RoundedCornerShape(15.dp),
                 modifier = Modifier.fillMaxWidth(),
             )
+            if (selectedPins.isNotEmpty()) {
+                Spacer(Modifier.height(8.dp))
+                NotePinsRow(
+                    pinIds = selectedPins,
+                    modifier = Modifier.fillMaxWidth(),
+                    iconSize = 24.dp
+                )
+            }
+
+
             AnimatedVisibility(aiEnabled) {
                 LazyRow(
                     Modifier
@@ -713,84 +724,102 @@ fun NoteDetailsScreen(
                     }
                 }
             )
-        if (openFolderDialog) AlertDialog(
-            onDismissRequest = { openFolderDialog = false },
-            confirmButton = {},
-            text = {
-                Column(
-                    Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.Start
-                ) {
-                    Text(stringResource(R.string.change_folder))
-                    FlowRow {
-                        Row(
-                            modifier = Modifier
-                                .padding(4.dp)
-                                .clip(RoundedCornerShape(25.dp))
-                                .border(1.dp, Color.Gray, RoundedCornerShape(25.dp))
-                                .clickable {
-                                    viewModel.onEvent(NoteDetailsEvent.UpdateFolder(null))
-                                    openFolderDialog = false
-                                }
-                                .background(if (folder == null) MaterialTheme.colorScheme.onBackground else Color.Transparent),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = stringResource(R.string.none),
-                                modifier = Modifier.padding(8.dp),
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = if (folder == null) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.onBackground
-                            )
-                        }
-                        state.folders.forEach {
+        if (openFolderDialog) {
+            AlertDialog(
+                onDismissRequest = { openFolderDialog = false },
+                confirmButton = {},
+                text = {
+                    Column(
+                        Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.Start
+                    ) {
+                        Text(stringResource(R.string.change_folder))
+                        FlowRow {
                             Row(
                                 modifier = Modifier
                                     .padding(4.dp)
                                     .clip(RoundedCornerShape(25.dp))
                                     .border(1.dp, Color.Gray, RoundedCornerShape(25.dp))
                                     .clickable {
-                                        viewModel.onEvent(NoteDetailsEvent.UpdateFolder(it))
+                                        viewModel.onEvent(NoteDetailsEvent.UpdateFolder(null))
                                         openFolderDialog = false
                                     }
-                                    .background(if (folder?.id == it.id) MaterialTheme.colorScheme.onBackground else Color.Transparent),
+                                    .background(
+                                        if (folder == null) MaterialTheme.colorScheme.onBackground else Color.Transparent
+                                    ),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(
-                                    painterResource(R.drawable.ic_folder),
-                                    stringResource(R.string.folders),
-                                    modifier = Modifier.padding(
-                                        start = 8.dp,
-                                        top = 8.dp,
-                                        bottom = 8.dp
-                                    ),
-                                    tint = if (folder?.id == it.id) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.onBackground
-                                )
-                                Spacer(Modifier.width(8.dp))
                                 Text(
-                                    text = it.name,
-                                    modifier = Modifier.padding(
-                                        end = 8.dp,
-                                        top = 8.dp,
-                                        bottom = 8.dp
-                                    ),
+                                    text = stringResource(R.string.none),
+                                    modifier = Modifier.padding(8.dp),
                                     style = MaterialTheme.typography.bodyLarge,
-                                    color = if (folder?.id == it.id) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.onBackground
+                                    color = if (folder == null) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.onBackground
                                 )
+                            }
+
+                            state.folders.forEach {
+                                Row(
+                                    modifier = Modifier
+                                        .padding(4.dp)
+                                        .clip(RoundedCornerShape(25.dp))
+                                        .border(1.dp, Color.Gray, RoundedCornerShape(25.dp))
+                                        .clickable {
+                                            viewModel.onEvent(NoteDetailsEvent.UpdateFolder(it))
+                                            openFolderDialog = false
+                                        }
+                                        .background(
+                                            if (folder?.id == it.id) MaterialTheme.colorScheme.onBackground else Color.Transparent
+                                        ),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        painterResource(R.drawable.ic_folder),
+                                        stringResource(R.string.folders),
+                                        modifier = Modifier.padding(
+                                            start = 8.dp,
+                                            top = 8.dp,
+                                            bottom = 8.dp
+                                        ),
+                                        tint = if (folder?.id == it.id) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.onBackground
+                                    )
+                                    Spacer(Modifier.width(8.dp))
+                                    Text(
+                                        text = it.name,
+                                        modifier = Modifier.padding(
+                                            end = 8.dp,
+                                            top = 8.dp,
+                                            bottom = 8.dp
+                                        ),
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = if (folder?.id == it.id) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.onBackground
+                                    )
+                                }
                             }
                         }
                     }
                 }
-            })
+            )
+        }
+
+        if (showPinsDialog) {
+            NotePinsDialog(
+                selectedPins = selectedPins,
+                important = pinned,
+                onToggleImportant = { viewModel.onEvent(NoteDetailsEvent.UpdatePinned(!pinned)) },
+                onTogglePin = { pin -> viewModel.onEvent(NoteDetailsEvent.TogglePin(pin.id)) },
+                onDismiss = { showPinsDialog = false }
+            )
+        }
+
         if (showCameraX) {
             CameraXCaptureDialog(
                 onDismiss = { showCameraX = false },
-                onPhoto = { uri -> startCrop(uri) },      // <-- NU: beskär först
+                onPhoto = { uri -> startCrop(uri) },
                 newImageUri = { newImageUri() }
             )
         }
     }
 }
-
 
 @Composable
 fun CameraXCaptureDialog(
@@ -882,7 +911,9 @@ fun CameraXCaptureDialog(
             }
 
             // Stäng-knapp
-            Box(modifier = Modifier.align(Alignment.TopEnd).padding(12.dp)) {
+            Box(modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(12.dp)) {
                 OutlinedButton(onClick = onDismiss, shape = CircleShape) { Text("Stäng") }
             }
         }

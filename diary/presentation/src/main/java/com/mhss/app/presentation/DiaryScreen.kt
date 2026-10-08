@@ -66,7 +66,7 @@ fun DiaryScreen(
                         Icon(
                             painter = painterResource(id = R.drawable.ic_chart),
                             contentDescription = stringResource(R.string.diary_chart),
-                            modifier = Modifier.size(34.dp)
+                            modifier = Modifier.size(36.dp)
                         )
                     }
                 }

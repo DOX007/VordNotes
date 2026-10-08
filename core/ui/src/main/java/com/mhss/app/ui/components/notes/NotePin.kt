@@ -24,16 +24,18 @@ enum class NotePin(
     val label: String,
     val color: Color
 ) {
-    DIAPER("bloybyte", R.drawable.bloybyte, "Byta blöja", Color(0xFF8D6E63)),
-    BED_RAIL("senggavel", R.drawable.senggavel, "Sänggavel", Color(0xFF90A4AE)),
-    MEDICATION("pillmed", R.drawable.pillmed, "Mediciner", Color(0xFF42A5F5)),
-    BED_ALARM("senglarm", R.drawable.senglarm, "Sänglarm", Color(0xFFFFA726)),
-    INFECTION("smittvirus", R.drawable.smittvirus, "Smittvirus", Color(0xFF66BB6A)),
     DANGER("ffara", R.drawable.ffara, "Fara", Color(0xFFE32929)),
-    SNACK("mellanmol", R.drawable.mellanmol, "Mellanmål", Color(0xFFFFCA28)),
-    CAMERA("cameraovervakning", R.drawable.cameraovervakning, "Kameraövervakning", Color(0xFFAB47BC)),
+    INFECTION("smittvirus", R.drawable.smittvirus, "Smittvirus", Color(0xFF66BB6A)),
+    DIAPER("bloybyte", R.drawable.bloybyte, "Byta blöja", Color(0xFF8D6E63)),
     SUPERVISION("tillsyn", R.drawable.tillsyn, "Tillsyn", Color(0xFF26C6DA)),
-    POSITION_CHANGE("legesendring", R.drawable.legesendring, "Lägesändring", Color(0xFFEC407A));
+    POSITION_CHANGE("legesendring", R.drawable.legesendring, "Lägesändring", Color(0xFF00F8DD)),
+    MEDICATION("pillmed", R.drawable.pillmed, "Mediciner", Color(0xFF42A5F5)),
+    BED_RAIL("senggavel", R.drawable.senggavel, "Sänggavel", Color(0xFF90A4AE)),
+    BED_ALARM("senglarm", R.drawable.senglarm, "Sänglarm", Color(0xFFC4852A)),
+    SNACK("mellanmol", R.drawable.mellanmol, "Mellanmål", Color(0xFFFFCA28)),
+    CAMERA("cameraovervakning", R.drawable.cameraovervakning, "Kameraövervakning", Color(0xFFAB47BC));
+
+
 
     companion object {
         fun fromId(id: String): NotePin? = entries.firstOrNull { it.id == id }
@@ -50,7 +52,7 @@ enum class NotePin(
 fun NotePinsRow(
     pinIds: List<String>,
     modifier: Modifier = Modifier,
-    iconSize: Dp = 20.dp
+    iconSize: Dp = 24.dp
 ) {
     val pins = NotePin.fromIds(pinIds)
     if (pins.isEmpty()) return

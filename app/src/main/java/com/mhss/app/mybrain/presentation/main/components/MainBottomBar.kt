@@ -114,7 +114,7 @@ fun MainBottomBar(
                             painter = painterResource(item.icon),
                             contentDescription = stringResource(item.title),
                             tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f), // ← ÄNDRAT
-                            modifier = Modifier.size(28.dp)
+                            modifier = Modifier.size(24.dp)
                         )
                     }
                 }
