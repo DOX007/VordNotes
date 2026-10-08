@@ -48,3 +48,8 @@ include ':ai:presentation'
 include ':ai:domain'
 include ':ai:data'
 include ':core:network'
+
+// Skapar mappen automatiskt om den saknas så att Gradle 9+ inte kraschar
+if (findProject(':app:core') != null) {
+    project(':app:core').projectDir.mkdirs()
+}
