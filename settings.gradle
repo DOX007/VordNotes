@@ -1,0 +1,50 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        google()
+        mavenCentral()
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
+    }
+}
+rootProject.name = "My Brain"
+include ':core:util'
+include ':core'
+include ':app:core'
+include ':app'
+include ':core:notification'
+include ':tasks:domain'
+include ':core:alarm'
+include ':notes:domain'
+include ':core:preferences'
+include ':core:di'
+include ':core:widget'
+include ':calendar:domain'
+include ':diary:domain'
+include ':bookmarks:domain'
+include ':core:ui'
+include ':widget'
+include ':settings:domain'
+include ':core:database'
+include ':tasks:presentation'
+include ':notes:data'
+include ':tasks:data'
+include ':notes:presentation'
+include ':diary:presentation'
+include ':bookmarks:presentation'
+include ':calendar:presentation'
+include ':settings:presentation'
+include ':settings:data'
+include ':diary:data'
+include ':calendar:data'
+include ':bookmarks:data'
+include ':ai:presentation'
+include ':ai:domain'
+include ':ai:data'
+include ':core:network'

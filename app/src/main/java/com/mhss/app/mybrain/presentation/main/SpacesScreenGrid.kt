@@ -1,0 +1,115 @@
+package com.mhss.app.mybrain.presentation.main
+
+import android.content.res.Configuration
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
+import com.mhss.app.ui.R
+import com.mhss.app.mybrain.presentation.main.components.SpaceCardGrid
+import com.mhss.app.ui.components.common.MyBrainAppBar
+import com.mhss.app.ui.navigation.Screen
+import com.mhss.app.ui.theme.Blue
+import com.mhss.app.ui.theme.Green
+import com.mhss.app.ui.theme.MyBrainTheme
+import com.mhss.app.ui.theme.Orange
+import com.mhss.app.ui.theme.Purple
+import com.mhss.app.ui.theme.Red
+import androidx.compose.ui.platform.LocalConfiguration
+
+@Composable
+fun SpacesScreenGrid(
+    navController: NavHostController
+) {
+    Scaffold(
+        containerColor = Color.Transparent,
+        topBar = {
+            MyBrainAppBar(stringResource(R.string.spaces))
+        }
+    ) { paddingValues ->
+
+        val cfg = LocalConfiguration.current
+
+        val minCardWidth = when {
+            cfg.screenWidthDp < 360 -> 140.dp
+            cfg.screenWidthDp < 600 -> 160.dp
+            cfg.screenWidthDp < 840 -> 200.dp
+            else -> 240.dp
+        }
+
+        LazyVerticalGrid(
+            columns = GridCells.Adaptive(minCardWidth),
+            modifier = Modifier.padding(paddingValues),
+            contentPadding = PaddingValues(
+                top = 30.dp,
+                bottom = 32.dp,
+                start = 10.dp,
+                end = 10.dp
+            ),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            items(spaces) { (title, image, color, screen) ->
+                SpaceCardGrid(
+                    title = stringResource(title),
+                    image = image,
+                    backgroundColor = color,
+                    isPulsing = title == R.string.diary, // 🔥 ONLY DIARY
+                    onClick = {
+                        navController.navigate(screen)
+                    }
+                )
+            }
+
+            item {
+                SpaceCardGrid(
+                    title = stringResource(R.string.assistant),
+                    image = R.drawable.ai_chat_img,
+                    backgroundColor = Color.Transparent,
+                    isPulsing = false,
+                    onClick = {
+                        navController.navigate(Screen.AssistantScreen)
+                    }
+                )
+            }
+        }
+    }
+}
+
+private val spaces = listOf(
+    SpaceGrid(R.string.notes, R.drawable.notes_img, Blue, Screen.NotesScreen()),
+    SpaceGrid(R.string.tasks, R.drawable.tasks_img, Red, Screen.TasksScreen()),
+    SpaceGrid(R.string.diary, R.drawable.diary_img, Green, Screen.DiaryScreen),
+    SpaceGrid(R.string.bookmarks, R.drawable.bookmarks_img, Orange, Screen.BookmarksScreen),
+    SpaceGrid(R.string.calendar, R.drawable.calendar_img, Purple, Screen.CalendarScreen),
+)
+
+private data class SpaceGrid(
+    val title: Int,
+    val image: Int,
+    val color: Color,
+    val route: Screen
+)
+
+@Preview(widthDp = 360, heightDp = 680)
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+fun SpacesScreenGridPreview() {
+    MyBrainTheme {
+        SpacesScreenGrid(
+            navController = rememberNavController()
+        )
+    }
+}

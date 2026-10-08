@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <resources>
+        <style name="Theme.MyBrain" parent="Theme.Material3.Light.NoActionBar">
+            <item name="android:windowSplashScreenBackground">@color/black</item>
+            <item name="android:windowSplashScreenAnimatedIcon">@drawable/vord01</item>
+            <item name="android:windowSplashScreenIconBackgroundColor">@android:color/transparent</item>
+        </style>
+    </resources>
+</PreferenceScreen>
+
+
+

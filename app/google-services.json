@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "336975924503",
+    "firebase_url": "https://vordnotes-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "vordnotes",
+    "storage_bucket": "vordnotes.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:336975924503:android:b7042e5bf890bb91dc3b52",
+        "android_client_info": {
+          "package_name": "com.mhss.app.mybrain"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyARc1yOZDneItHLtIlMVbKH_srEaqEOYjg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:336975924503:android:270bd85c75bd345bdc3b52",
+        "android_client_info": {
+          "package_name": "com.mhss.app.mybrain.debug"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyARc1yOZDneItHLtIlMVbKH_srEaqEOYjg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

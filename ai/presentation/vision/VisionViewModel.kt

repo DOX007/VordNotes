@@ -1,0 +1,60 @@
+package com.mhss.app.ai.presentation.vision
+
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.mhss.app.domain.use_case.SendVisionPromptUseCase
+import com.mhss.app.network.NetworkResult
+import kotlinx.coroutines.launch
+import org.koin.android.annotation.KoinViewModel
+
+@KoinViewModel
+class VisionViewModel(
+    private val sendVisionPrompt: SendVisionPromptUseCase
+) : ViewModel() {
+
+    var uiState by mutableStateOf(VisionUiState())
+        private set
+
+    /**
+     * ENTRYPOINT:
+     * Anropas när en bild är fångad (kamera / galleri)
+     */
+    fun analyzeImage(
+        imageBytes: ByteArray,
+        mimeType: String = "image/jpeg"
+    ) {
+        viewModelScope.launch {
+            uiState = uiState.copy(
+                loading = true,
+                error = null,
+                resultText = null
+            )
+
+            val result = sendVisionPrompt(
+                imageBytes = imageBytes,
+                mimeType = mimeType,
+                prompt = "Läs av och extrahera tydliga mätvärden från bilden."
+            )
+
+            uiState = when (result) {
+                is NetworkResult.Success -> {
+                    uiState.copy(
+                        loading = false,
+                        resultText = result.data
+                    )
+                }
+
+                is NetworkResult.Failure -> {
+                    uiState.copy(
+                        loading = false,
+                        error = result
+                    )
+                }
+            }
+        }
+    }
+}
+
