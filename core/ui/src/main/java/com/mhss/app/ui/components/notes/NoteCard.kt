@@ -73,6 +73,14 @@ fun NoteCard(
                     overflow = TextOverflow.Ellipsis
                 )
             }
+            if (note.pins.isNotEmpty()) {
+                Spacer(Modifier.height(6.dp))
+                NotePinsRow(
+                    pinIds = note.pins,
+                    modifier = Modifier.fillMaxWidth(),
+                    iconSize = 20.dp
+                )
+            }
             Spacer(Modifier.height(8.dp))
             Markdown(
                 content = note.content,

@@ -18,7 +18,7 @@ import com.mhss.app.database.entity.TaskEntity
 
 @Database(
     entities = [NoteEntity::class, TaskEntity::class, DiaryEntryEntity::class, BookmarkEntity::class, AlarmEntity::class, NoteFolderEntity::class],
-    version = 6
+    version = 8
 )
 @TypeConverters(DBConverters::class)
 abstract class MyBrainDatabase: RoomDatabase() {

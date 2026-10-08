@@ -51,6 +51,11 @@ data class NoteEntity(
     @PrimaryKey(autoGenerate = true)
     @SerialName("id")
     val id: Int = 0,
+
+    // Kommaseparerad lista med pin-id:n, t.ex. "bloybyte,tillsyn"
+    @ColumnInfo(name = "pins", defaultValue = "''")
+    @SerialName("pins")
+    val pins: String = "",
 )
 
 fun NoteEntity.toNote(): Note {
@@ -63,6 +68,7 @@ fun NoteEntity.toNote(): Note {
         folderId = folderId,
         orderIndex = orderIndex,
         id = id,
+        pins = pins.split(",").map { it.trim() }.filter { it.isNotEmpty() },
     )
 }
 
@@ -75,7 +81,8 @@ fun Note.toNoteEntity(): NoteEntity {
         pinned = pinned,
         folderId = folderId,
         orderIndex = orderIndex,
-        id = id
+        id = id,
+        pins = pins.joinToString(",")
     )
 }
 

@@ -15,6 +15,7 @@ sealed class NoteDetailsEvent {
     data class UpdateContent(val content: String): NoteDetailsEvent()
     data class UpdateFolder(val folder: NoteFolder?): NoteDetailsEvent()
     data class UpdatePinned(val pinned: Boolean): NoteDetailsEvent()
+    data class TogglePin(val pinId: String): NoteDetailsEvent()
 }
 
 sealed interface AiAction

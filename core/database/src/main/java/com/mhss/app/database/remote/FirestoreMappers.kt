@@ -14,6 +14,7 @@ private fun NoteEntity.toNoteMap(): HashMap<String, Any?> = hashMapOf(
     "createdDate" to createdDate,
     "updatedDate" to updatedDate,
     "pinned" to pinned,          // kan saknas i äldre data -> hanteras i DAO/Entity default
+    "pins" to pins,              // kommaseparerade vård-pins, kan saknas i äldre data
     "folderId" to folderId,
     "id" to id
 )

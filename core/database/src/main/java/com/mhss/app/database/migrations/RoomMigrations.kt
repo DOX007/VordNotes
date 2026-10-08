@@ -3,6 +3,16 @@ package com.mhss.app.database.migrations
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
+private fun SupportSQLiteDatabase.hasColumn(table: String, column: String): Boolean {
+    query("PRAGMA table_info($table)").use { c ->
+        val nameIndex = c.getColumnIndex("name")
+        while (c.moveToNext()) {
+            if (c.getString(nameIndex) == column) return true
+        }
+    }
+    return false
+}
+
 // Migration 1 → 2
 val MIGRATION_1_2 = object : Migration(1, 2) {
     override fun migrate(db: SupportSQLiteDatabase) {
@@ -68,10 +78,24 @@ val MIGRATION_5_6 = object : Migration(5, 6) {
     }
 }
 
+// Migration 6 → 7 (idempotent: order_index kan redan finnas i nyinstallerade databaser)
 val MIGRATION_6_7 = object : Migration(6, 7) {
     override fun migrate(db: SupportSQLiteDatabase) {
-        db.execSQL(
-            "ALTER TABLE notes ADD COLUMN order_index INTEGER NOT NULL DEFAULT 0"
-        )
+        if (!db.hasColumn("notes", "order_index")) {
+            db.execSQL(
+                "ALTER TABLE notes ADD COLUMN order_index INTEGER NOT NULL DEFAULT 0"
+            )
+        }
+    }
+}
+
+// Migration 7 → 8: flera vård-pins per anteckning
+val MIGRATION_7_8 = object : Migration(7, 8) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        if (!db.hasColumn("notes", "pins")) {
+            db.execSQL(
+                "ALTER TABLE notes ADD COLUMN pins TEXT NOT NULL DEFAULT ''"
+            )
+        }
     }
 }
