@@ -30,6 +30,7 @@ enum class NotePin(
     SUPERVISION("tillsyn", R.drawable.tillsyn, "Tillsyn", Color(0xFF26C6DA)),
     POSITION_CHANGE("legesendring", R.drawable.legesendring, "Lägesändring", Color(0xFF00F8DD)),
     MEDICATION("pillmed", R.drawable.pillmed, "Mediciner", Color(0xFF42A5F5)),
+    KATETERPASE("kateterpase", R.drawable.kateterpase, "Kateterpåse", Color(0xFF423FEC)),
     BED_RAIL("senggavel", R.drawable.senggavel, "Sänggavel", Color(0xFF90A4AE)),
     BED_ALARM("senglarm", R.drawable.senglarm, "Sänglarm", Color(0xFFC4852A)),
     SNACK("mellanmol", R.drawable.mellanmol, "Mellanmål", Color(0xFFFFCA28)),
