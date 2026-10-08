@@ -35,7 +35,6 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.flow.MutableStateFlow
 import com.mhss.app.domain.visionOcrPrompt
-import com.mhss.app.ui.components.notes.NotePin
 
 @KoinViewModel
 class NoteDetailsViewModel(
@@ -63,7 +62,6 @@ class NoteDetailsViewModel(
     private var autoSaveJob: Job? = null
     private val debounceTime = 2000L
 
-    // Dessa laddas alltid från OpenAI settings direkt!
     private lateinit var aiKey: String
     private lateinit var aiModel: String
     private lateinit var openaiURL: String
@@ -73,17 +71,13 @@ class NoteDetailsViewModel(
         private set
     private var aiActionJob: Job? = null
 
-    // Alltid OpenAI!
     private val aiProvider = MutableStateFlow(com.mhss.app.preferences.domain.model.AiProvider.OpenAI)
 
-    // ===== SÄKER SYNC: tillskott =====
     private val saveMutex = Mutex()
     private var creatingNote = false
-    // ==================================
 
     init {
         viewModelScope.launch {
-            // Ladda alltid OpenAI settings
             aiKey = getPreference(
                 stringPreferencesKey(PrefsConstants.OPENAI_KEY),
                 ""
@@ -192,6 +186,7 @@ class NoteDetailsViewModel(
             }
         }
     }
+
     fun runVisionOcr(
         base64Image: String,
         onDone: () -> Unit,
@@ -245,7 +240,6 @@ class NoteDetailsViewModel(
         }
     }
 
-    // ===== SÄKER SYNC: lås + single-flight på första add =====
     private suspend fun saveNote() = saveMutex.withLock {
         if (noteUiState.navigateUp) return@withLock
 
@@ -295,7 +289,6 @@ class NoteDetailsViewModel(
             }
         }
     }
-    // ==================================
 
     data class UiState(
         val note: Note? = null,
