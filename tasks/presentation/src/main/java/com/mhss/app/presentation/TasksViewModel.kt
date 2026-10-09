@@ -108,8 +108,19 @@ class TasksViewModel(
         val showCompletedTasks: Boolean = true,
         val error: Int? = null,
         val errorAlarm: Boolean = false,
-        val searchTasks: List<Task> = emptyList()
+        val searchTasks: List<Task> = emptyList(),
+        val patientNames: List<String> = emptyList()
     )
+
+    fun setPatientNames(names: List<String>) {
+        tasksUiState = tasksUiState.copy(
+            patientNames = names
+                .map { it.trim() }
+                .filter { it.isNotBlank() }
+                .distinct()
+                .sorted()
+        )
+    }
 
     private fun getTasks(order: Order, showCompleted: Boolean) {
         getTasksJob?.cancel()

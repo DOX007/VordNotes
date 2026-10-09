@@ -97,7 +97,8 @@ fun TasksScreen(
                     focusRequester.freeFocus()
                 },
                 focusRequester = focusRequester,
-                initialTitle = prefillTitle
+                initialTitle = prefillTitle,
+                allPatientNames = uiState.patientNames
             )
         }
         LaunchedEffect(uiState.error) {

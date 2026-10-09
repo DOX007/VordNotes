@@ -210,6 +210,7 @@ fun TaskDetailScreen(
         )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskDetailsContent(
     modifier: Modifier = Modifier,
@@ -226,7 +227,9 @@ fun TaskDetailsContent(
     priorities: List<Priority>,
     formattedDate: String,
     focusRequester: FocusRequester? = null,
+    patientSuggestions: List<String> = emptyList(),
     onTitleChange: (String) -> Unit,
+    onPatientSelected: (String) -> Unit = {},
     onDescriptionChange: (String) -> Unit,
     onPriorityChange: (Priority) -> Unit,
     onDueDateExist: (Boolean) -> Unit,
@@ -237,6 +240,8 @@ fun TaskDetailsContent(
     onComplete: (Boolean) -> Unit,
     optionalContent: @Composable ColumnScope.() -> Unit = {}
 ) {
+    var patientMenuExpanded by remember { mutableStateOf(false) }
+
     Column(
         modifier
             .fillMaxWidth()
@@ -254,18 +259,52 @@ fun TaskDetailsContent(
                 onComplete(!completed)
             }
             Spacer(Modifier.width(8.dp))
-            OutlinedTextField(
-                value = title,
-                onValueChange = onTitleChange,
-                label = { Text(text = stringResource(R.string.title)) },
-                shape = RoundedCornerShape(15.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .then(
-                        if (focusRequester != null) Modifier.focusRequester(focusRequester)
-                        else Modifier
-                    )
-            )
+
+            ExposedDropdownMenuBox(
+                expanded = patientMenuExpanded && patientSuggestions.isNotEmpty(),
+                onExpandedChange = { expanded ->
+                    patientMenuExpanded = expanded && patientSuggestions.isNotEmpty()
+                },
+                modifier = Modifier.weight(1f)
+            ) {
+                OutlinedTextField(
+                    value = title,
+                    onValueChange = {
+                        onTitleChange(it)
+                        patientMenuExpanded = it.isNotBlank() && patientSuggestions.isNotEmpty()
+                    },
+                    label = { Text(text = stringResource(R.string.title)) },
+                    shape = RoundedCornerShape(15.dp),
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(
+                            expanded = patientMenuExpanded && patientSuggestions.isNotEmpty()
+                        )
+                    },
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth()
+                        .then(
+                            if (focusRequester != null) Modifier.focusRequester(focusRequester)
+                            else Modifier
+                        )
+                )
+
+                ExposedDropdownMenu(
+                    expanded = patientMenuExpanded && patientSuggestions.isNotEmpty(),
+                    onDismissRequest = { patientMenuExpanded = false }
+                ) {
+                    patientSuggestions.forEach { suggestion ->
+                        DropdownMenuItem(
+                            text = { Text(suggestion) },
+                            onClick = {
+                                onPatientSelected(suggestion)
+                                patientMenuExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
+
             LaunchedEffect(focusRequester) {
                 focusRequester?.requestFocus()
             }
