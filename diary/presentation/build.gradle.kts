@@ -56,7 +56,8 @@ dependencies {
     implementation(project(":ai:presentation"))
     implementation(project(":diary:domain"))
     implementation(project(":core:util"))
-    
+    implementation(project(":notes:domain"))
+
     implementation(project(":core:ui"))
     implementation(project(":core:preferences"))
 
