@@ -24,11 +24,11 @@ enum class NotePin(
     val label: String,
     val color: Color
 ) {
-    DANGER("ffara", R.drawable.ffara, "Fara", Color(0xFFE32929)),
+    DANGER("ffara", R.drawable.ffara, "Fara", Color(0xFFF30000)),
     INFECTION("smittvirus", R.drawable.smittvirus, "Smittvirus", Color(0xFF66BB6A)),
-    DIAPER("bloybyte", R.drawable.bloybyte, "Byta blöja", Color(0xFF8D6E63)),
     SUPERVISION("tillsyn", R.drawable.tillsyn, "Tillsyn", Color(0xFF26C6DA)),
-    POSITION_CHANGE("legesendring", R.drawable.legesendring, "Lägesändring", Color(0xFF00F8DD)),
+    POSITION_CHANGE("legesendring", R.drawable.legesendring, "Lägesändring", Color(0xFFD31626)),
+    DIAPER("bloybyte", R.drawable.bloybyte, "Byta blöja", Color(0xFFFFFFFF)),
     MEDICATION("pillmed", R.drawable.pillmed, "Mediciner", Color(0xFF42A5F5)),
     KATETERPASE("kateterpase", R.drawable.kateterpase, "Kateterpåse", Color(0xFF423FEC)),
     BED_RAIL("senggavel", R.drawable.senggavel, "Sänggavel", Color(0xFF90A4AE)),
