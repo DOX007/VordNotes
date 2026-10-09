@@ -56,8 +56,9 @@ dependencies {
 
     implementation("com.google.accompanist:accompanist-flowlayout:0.30.1")
     implementation(project(":tasks:domain"))
+    implementation(project(":notes:domain"))
     implementation(project(":core:util"))
-    
+
     implementation(project(":core:ui"))
     implementation(project(":core:preferences"))
 
