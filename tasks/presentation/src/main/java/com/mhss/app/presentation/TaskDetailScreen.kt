@@ -240,7 +240,8 @@ fun TaskDetailsContent(
     onComplete: (Boolean) -> Unit,
     optionalContent: @Composable ColumnScope.() -> Unit = {}
 ) {
-    var patientMenuExpanded by remember { mutableStateOf(false) }
+    var patientMenuOpen by remember { mutableStateOf(false) }
+    val showPatientMenu = patientMenuOpen && patientSuggestions.isNotEmpty()
 
     Column(
         modifier
@@ -259,27 +260,19 @@ fun TaskDetailsContent(
                 onComplete(!completed)
             }
             Spacer(Modifier.width(8.dp))
-
             ExposedDropdownMenuBox(
-                expanded = patientMenuExpanded && patientSuggestions.isNotEmpty(),
-                onExpandedChange = { expanded ->
-                    patientMenuExpanded = expanded && patientSuggestions.isNotEmpty()
-                },
+                expanded = showPatientMenu,
+                onExpandedChange = { patientMenuOpen = it && patientSuggestions.isNotEmpty() },
                 modifier = Modifier.weight(1f)
             ) {
                 OutlinedTextField(
                     value = title,
                     onValueChange = {
                         onTitleChange(it)
-                        patientMenuExpanded = it.isNotBlank() && patientSuggestions.isNotEmpty()
+                        patientMenuOpen = it.isNotBlank()
                     },
                     label = { Text(text = stringResource(R.string.title)) },
                     shape = RoundedCornerShape(15.dp),
-                    trailingIcon = {
-                        ExposedDropdownMenuDefaults.TrailingIcon(
-                            expanded = patientMenuExpanded && patientSuggestions.isNotEmpty()
-                        )
-                    },
                     modifier = Modifier
                         .menuAnchor()
                         .fillMaxWidth()
@@ -288,23 +281,21 @@ fun TaskDetailsContent(
                             else Modifier
                         )
                 )
-
                 ExposedDropdownMenu(
-                    expanded = patientMenuExpanded && patientSuggestions.isNotEmpty(),
-                    onDismissRequest = { patientMenuExpanded = false }
+                    expanded = showPatientMenu,
+                    onDismissRequest = { patientMenuOpen = false }
                 ) {
                     patientSuggestions.forEach { suggestion ->
                         DropdownMenuItem(
                             text = { Text(suggestion) },
                             onClick = {
+                                patientMenuOpen = false
                                 onPatientSelected(suggestion)
-                                patientMenuExpanded = false
                             }
                         )
                     }
                 }
             }
-
             LaunchedEffect(focusRequester) {
                 focusRequester?.requestFocus()
             }

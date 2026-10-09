@@ -18,6 +18,7 @@ import com.mhss.app.preferences.domain.model.toOrder
 import com.mhss.app.preferences.domain.use_case.GetPreferenceUseCase
 import com.mhss.app.preferences.domain.use_case.SavePreferenceUseCase
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
@@ -29,7 +30,8 @@ class TasksViewModel(
     private val completeTask: UpdateTaskCompletedUseCase,
     getPreference: GetPreferenceUseCase,
     private val savePreference: SavePreferenceUseCase,
-    private val searchTasksUseCase: SearchTasksUseCase
+    private val searchTasksUseCase: SearchTasksUseCase,
+    private val searchNotesUseCase: SearchNotesUseCase
 ) : ViewModel() {
 
     var tasksUiState by mutableStateOf(UiState())
@@ -37,6 +39,7 @@ class TasksViewModel(
 
     private var getTasksJob: Job? = null
     private var searchTasksJob: Job? = null
+    private var patientSearchJob: Job? = null
 
     init {
         viewModelScope.launch {
@@ -109,17 +112,38 @@ class TasksViewModel(
         val error: Int? = null,
         val errorAlarm: Boolean = false,
         val searchTasks: List<Task> = emptyList(),
-        val patientNames: List<String> = emptyList()
+        val patientSuggestions: List<String> = emptyList()
     )
 
-    fun setPatientNames(names: List<String>) {
-        tasksUiState = tasksUiState.copy(
-            patientNames = names
-                .map { it.trim() }
-                .filter { it.isNotBlank() }
+    /**
+     * Söker patienter (= notes-titlar) via SearchNotesUseCase.
+     * Titlar som BÖRJAR med texten visas först, därefter de som innehåller den.
+     */
+    fun searchPatients(query: String) {
+        patientSearchJob?.cancel()
+        val q = query.trim()
+        if (q.isEmpty()) {
+            tasksUiState = tasksUiState.copy(patientSuggestions = emptyList())
+            return
+        }
+        patientSearchJob = viewModelScope.launch {
+            delay(150) // debounce
+            val suggestions = searchNotesUseCase(q)
+                .map { it.title.trim() }
+                .filter { it.isNotBlank() && !it.equals(q, ignoreCase = true) }
                 .distinct()
-                .sorted()
-        )
+                .sortedWith(
+                    compareByDescending<String> { it.startsWith(q, ignoreCase = true) }
+                        .thenBy { it.lowercase() }
+                )
+                .take(10)
+            tasksUiState = tasksUiState.copy(patientSuggestions = suggestions)
+        }
+    }
+
+    fun clearPatientSuggestions() {
+        patientSearchJob?.cancel()
+        tasksUiState = tasksUiState.copy(patientSuggestions = emptyList())
     }
 
     private fun getTasks(order: Order, showCompleted: Boolean) {

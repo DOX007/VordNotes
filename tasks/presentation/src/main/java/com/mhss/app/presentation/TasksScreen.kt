@@ -81,7 +81,10 @@ fun TasksScreen(
     ) { paddingValues ->
         if (openSheet) ModalBottomSheet(
             sheetState = sheetState,
-            onDismissRequest = { openSheet = false },
+            onDismissRequest = {
+                openSheet = false
+                viewModel.clearPatientSuggestions()
+            },
             properties = ModalBottomSheetProperties(
                 shouldDismissOnBackPress = true
             )
@@ -98,7 +101,9 @@ fun TasksScreen(
                 },
                 focusRequester = focusRequester,
                 initialTitle = prefillTitle,
-                allPatientNames = uiState.patientNames
+                patientSuggestions = uiState.patientSuggestions,
+                onTitleQueryChange = { viewModel.searchPatients(it) },
+                onPatientPicked = { viewModel.clearPatientSuggestions() }
             )
         }
         LaunchedEffect(uiState.error) {

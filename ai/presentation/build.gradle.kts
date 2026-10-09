@@ -3,11 +3,10 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.ksp)
     alias(libs.plugins.kotlin.compose.compiler)
-    alias(libs.plugins.kotlinx.serialization)
 }
 
 android {
-    namespace = "com.mhss.app.ai.presentation"
+    namespace = "com.mhss.app.tasks.presentation"
     compileSdk = 35
 
     defaultConfig {
@@ -51,17 +50,13 @@ android {
     buildFeatures {
         compose = true
     }
-    lint {
-        disable += "NullSafeMutableLiveData"
-    }
 }
 
 dependencies {
 
-    implementation(project(":ai:domain"))
-    implementation(project(":notes:domain"))
+    implementation("com.google.accompanist:accompanist-flowlayout:0.30.1")
     implementation(project(":tasks:domain"))
-    implementation(project(":calendar:domain"))
+    implementation(project(":notes:domain"))
     implementation(project(":core:util"))
 
     implementation(project(":core:ui"))
@@ -82,8 +77,4 @@ dependencies {
     implementation(libs.bundles.koin)
     implementation(libs.koin.android)
     ksp(libs.koin.ksp.compiler)
-
-    implementation(libs.kotlinx.serialization.json)
-
-    implementation(libs.squircle.shape)
 }

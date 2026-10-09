@@ -26,7 +26,9 @@ fun AddTaskBottomSheetContent(
     onAddTask: (Task) -> Unit,
     focusRequester: FocusRequester,
     initialTitle: String = "",
-    allPatientNames: List<String> = emptyList(),
+    patientSuggestions: List<String> = emptyList(),
+    onTitleQueryChange: (String) -> Unit = {},
+    onPatientPicked: () -> Unit = {},
 ) {
     val context = LocalContext.current
     var completed by rememberSaveable { mutableStateOf(false) }
@@ -45,19 +47,6 @@ fun AddTaskBottomSheetContent(
             dueDate.formatDateDependingOnDay(context)
         }
     }
-
-    val patientSuggestions = remember(title, allPatientNames) {
-        if (title.isBlank()) {
-            emptyList()
-        } else {
-            allPatientNames
-                .asSequence()
-                .filter { it.contains(title, ignoreCase = true) }
-                .take(10)
-                .toList()
-        }
-    }
-
     val keyboardController = LocalSoftwareKeyboardController.current
     LaunchedEffect(true) {
         focusRequester.requestFocus()
@@ -75,7 +64,6 @@ fun AddTaskBottomSheetContent(
             modifier = Modifier.weight(1f),
             completed = completed,
             title = title,
-            patientSuggestions = patientSuggestions,
             description = description,
             priority = priority,
             dueDate = dueDate,
@@ -87,8 +75,15 @@ fun AddTaskBottomSheetContent(
             priorities = priorities,
             formattedDate = formattedDate,
             focusRequester = focusRequester,
-            onTitleChange = { title = it },
-            onPatientSelected = { selected -> title = selected },
+            patientSuggestions = patientSuggestions,
+            onTitleChange = {
+                title = it
+                onTitleQueryChange(it)
+            },
+            onPatientSelected = { selected ->
+                title = selected
+                onPatientPicked()
+            },
             onDescriptionChange = { description = it },
             onPriorityChange = { priority = it },
             onDueDateExist = { dueDateExists = it },
@@ -121,6 +116,7 @@ fun AddTaskBottomSheetContent(
                         dueDate = now()
                         dueDateExists = false
                         subTasks.clear()
+                        onPatientPicked()
                         keyboardController?.hide()
                     },
                     modifier = Modifier
