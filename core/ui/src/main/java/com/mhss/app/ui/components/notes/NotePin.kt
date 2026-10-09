@@ -28,13 +28,13 @@ enum class NotePin(
     INFECTION("smittvirus", R.drawable.smittvirus, "Smittvirus", Color(0xFF66BB6A)),
     SUPERVISION("tillsyn", R.drawable.tillsyn, "Tillsyn", Color(0xFF26C6DA)),
     POSITION_CHANGE("legesendring", R.drawable.legesendring, "Lägesändring", Color(0xFFD31626)),
-    DIAPER("bloybyte", R.drawable.bloybyte, "Byta blöja", Color(0xFFFFFFFF)),
+    DIAPER("bloybyte", R.drawable.bloybyte, "Byta blöja", Color(0xFFFF991C)),
     MEDICATION("pillmed", R.drawable.pillmed, "Mediciner", Color(0xFF42A5F5)),
     KATETERPASE("kateterpase", R.drawable.kateterpase, "Kateterpåse", Color(0xFF423FEC)),
     BED_RAIL("senggavel", R.drawable.senggavel, "Sänggavel", Color(0xFF90A4AE)),
-    BED_ALARM("senglarm", R.drawable.senglarm, "Sänglarm", Color(0xFFC4852A)),
+    BED_ALARM("senglarm", R.drawable.senglarm, "Sänglarm", Color(0xFF9C27B0)),
     SNACK("mellanmol", R.drawable.mellanmol, "Mellanmål", Color(0xFFFFCA28)),
-    CAMERA("cameraovervakning", R.drawable.cameraovervakning, "Kameraövervakning", Color(0xFFAB47BC));
+    CAMERA("cameraovervakning", R.drawable.cameraovervakning, "Kameraövervakning", Color(0xFF4CAF50));
 
 
 
