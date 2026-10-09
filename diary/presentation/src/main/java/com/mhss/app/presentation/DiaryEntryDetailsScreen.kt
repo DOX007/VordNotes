@@ -5,7 +5,6 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -25,6 +24,7 @@ import com.mhss.app.domain.model.Mood
 import com.mhss.app.ui.R
 import com.mhss.app.ui.components.common.DateTimeDialog
 import com.mhss.app.ui.components.common.MyBrainAppBar
+import com.mhss.app.ui.components.common.TTSSpeakerIcon
 import com.mhss.app.util.date.fullDate
 import com.mhss.app.util.date.now
 import com.mikepenz.markdown.coil2.Coil2ImageTransformerImpl
@@ -33,26 +33,19 @@ import com.mikepenz.markdown.m3.markdownColor
 import com.mikepenz.markdown.m3.markdownTypography
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
-import com.mhss.app.ui.components.common.TTSSpeakerIcon // Lägg till denna!
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.lazy.LazyRow
-import com.mhss.app.presentation.components.GradientIconButton
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DiaryEntryDetailsScreen(
     navController: NavHostController,
     entryId: Int,
-    viewModel: DiaryDetailsViewModel = koinViewModel(parameters = { parametersOf(entryId) })
+    viewModel: DiaryDetailsViewModel = koinViewModel(parameters = { parametersOf(entryId) }),
+    diaryViewModel: DiaryViewModel = koinViewModel()
 ) {
     val state = viewModel.uiState
+    val diaryState = diaryViewModel.uiState
     val snackbarHostState = remember { SnackbarHostState() }
     var openDialog by rememberSaveable { mutableStateOf(false) }
-
 
     var title by remember { mutableStateOf("") }
     var content by remember { mutableStateOf("") }
@@ -62,13 +55,10 @@ fun DiaryEntryDetailsScreen(
     var showDateDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
-    // Om du har samma aiEnabled-lösning som Notes
-    val aiEnabled = true // eller viewModel.aiEnabled.collectAsStateWithLifecycle().value
-    // val keyboardController = LocalSoftwareKeyboardController.current // om du vill dölja keyboard
-
-    // TTS status för högtalarikonen i appbar
     var isTTSPlaying by remember { mutableStateOf(false) }
     var openDeleteDialog by rememberSaveable { mutableStateOf(false) }
+    var patientMenuOpen by remember { mutableStateOf(false) }
+    val showPatientMenu = patientMenuOpen && diaryState.patientSuggestions.isNotEmpty()
 
     LaunchedEffect(state.entry) {
         if (state.entry != null) {
@@ -78,13 +68,16 @@ fun DiaryEntryDetailsScreen(
             mood = state.entry.mood
         }
     }
+
     LaunchedEffect(state.navigateUp) {
         if (state.navigateUp) {
-            isTTSPlaying = false     // ← lägg till denna rad!
+            isTTSPlaying = false
             openDeleteDialog = false
+            diaryViewModel.onEvent(DiaryEvent.ClearPatientSuggestions)
             navController.navigateUp()
         }
     }
+
     LifecycleStartEffect(Unit) {
         onStopOrDispose {
             viewModel.onEvent(
@@ -97,8 +90,10 @@ fun DiaryEntryDetailsScreen(
                     )
                 )
             )
+            diaryViewModel.onEvent(DiaryEvent.ClearPatientSuggestions)
         }
     }
+
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.6f),
         contentColor = MaterialTheme.colorScheme.onBackground,
@@ -107,7 +102,6 @@ fun DiaryEntryDetailsScreen(
             MyBrainAppBar(
                 title = "",
                 actions = {
-                    // TTS-ikon först i menyn
                     TTSSpeakerIcon(
                         text = content,
                         isPlaying = isTTSPlaying,
@@ -123,15 +117,15 @@ fun DiaryEntryDetailsScreen(
                             tint = if (readingMode) Color.Green else Color.Gray
                         )
                     }
-                    if (state.entry != null) IconButton(onClick = { openDialog = true }) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_delete),
-                            contentDescription = stringResource(R.string.delete_entry)
-                        )
+                    if (state.entry != null) {
+                        IconButton(onClick = { openDialog = true }) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_delete),
+                                contentDescription = stringResource(R.string.delete_entry)
+                            )
+                        }
                     }
-                    TextButton(onClick = {
-                        showDateDialog = true
-                    }) {
+                    TextButton(onClick = { showDateDialog = true }) {
                         Text(
                             text = date.fullDate(context),
                             color = MaterialTheme.colorScheme.onBackground,
@@ -160,14 +154,40 @@ fun DiaryEntryDetailsScreen(
             ) { mood = it }
             Spacer(Modifier.height(8.dp))
 
-            // TITEL
-            OutlinedTextField(
-                value = title,
-                onValueChange = { title = it },
-                label = { Text(text = stringResource(R.string.title)) },
-                shape = RoundedCornerShape(15.dp),
+            ExposedDropdownMenuBox(
+                expanded = showPatientMenu,
+                onExpandedChange = { patientMenuOpen = it && diaryState.patientSuggestions.isNotEmpty() },
                 modifier = Modifier.fillMaxWidth()
-            )
+            ) {
+                OutlinedTextField(
+                    value = title,
+                    onValueChange = {
+                        title = it
+                        patientMenuOpen = it.isNotBlank()
+                        diaryViewModel.onEvent(DiaryEvent.SearchPatients(it))
+                    },
+                    label = { Text(text = stringResource(R.string.title)) },
+                    shape = RoundedCornerShape(15.dp),
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth()
+                )
+                ExposedDropdownMenu(
+                    expanded = showPatientMenu,
+                    onDismissRequest = { patientMenuOpen = false }
+                ) {
+                    diaryState.patientSuggestions.forEach { suggestion ->
+                        DropdownMenuItem(
+                            text = { Text(suggestion) },
+                            onClick = {
+                                title = suggestion
+                                patientMenuOpen = false
+                                diaryViewModel.onEvent(DiaryEvent.ClearPatientSuggestions)
+                            }
+                        )
+                    }
+                }
+            }
 
             Spacer(Modifier.height(8.dp))
 
@@ -176,7 +196,7 @@ fun DiaryEntryDetailsScreen(
                     content = content,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(1f)              // ← LÄGG TILL DENNA RAD!
+                        .weight(1f)
                         .padding(vertical = 6.dp)
                         .padding(8.dp),
                     imageTransformer = Coil2ImageTransformerImpl,
@@ -199,31 +219,28 @@ fun DiaryEntryDetailsScreen(
                     shape = RoundedCornerShape(15.dp),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(1f)               // ← LÄGG TILL DENNA RAD!
+                        .weight(1f)
                         .padding(bottom = 8.dp)
                 )
             }
         }
 
-        if (showDateDialog) DateTimeDialog(
-            onDismissRequest = { showDateDialog = false },
-            initialDate = date
-        ) {
-            date = it
-            showDateDialog = false
+        if (showDateDialog) {
+            DateTimeDialog(
+                onDismissRequest = { showDateDialog = false },
+                initialDate = date
+            ) {
+                date = it
+                showDateDialog = false
+            }
         }
-        if (openDialog)
+
+        if (openDialog) {
             AlertDialog(
                 shape = RoundedCornerShape(25.dp),
                 onDismissRequest = { openDialog = false },
                 title = { Text(stringResource(R.string.delete_diary_entry_confirmation_title)) },
-                text = {
-                    Text(
-                        stringResource(
-                            R.string.delete_diary_entry_confirmation_message
-                        )
-                    )
-                },
+                text = { Text(stringResource(R.string.delete_diary_entry_confirmation_message)) },
                 confirmButton = {
                     Button(
                         colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
@@ -241,9 +258,8 @@ fun DiaryEntryDetailsScreen(
                 dismissButton = {
                     Button(
                         shape = RoundedCornerShape(25.dp),
-                        onClick = {
-                            openDialog = false
-                        }) {
+                        onClick = { openDialog = false }
+                    ) {
                         Text(
                             stringResource(R.string.cancel),
                             color = Color.White
@@ -251,6 +267,7 @@ fun DiaryEntryDetailsScreen(
                     }
                 }
             )
+        }
     }
 }
 

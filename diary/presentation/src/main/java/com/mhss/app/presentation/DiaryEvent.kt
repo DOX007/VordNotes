@@ -6,5 +6,7 @@ sealed class DiaryEvent {
     data class SearchEntries(val query: String) : DiaryEvent()
     data class UpdateOrder(val order: Order) : DiaryEvent()
     data class ChangeChartEntriesRange(val monthly: Boolean) : DiaryEvent()
-    object ForceReload : DiaryEvent() // <-- DENNA RAD ÄR VIKTIG!
+    data class SearchPatients(val query: String) : DiaryEvent()
+    data object ClearPatientSuggestions : DiaryEvent()
+    object ForceReload : DiaryEvent()
 }
