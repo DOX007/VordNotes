@@ -103,11 +103,11 @@ class AssistantViewModel(
                 val aiModel = getPreference(
                     stringPreferencesKey(PrefsConstants.OPENAI_MODEL_KEY),
                     AiConstants.OPENAI_DEFAULT_MODEL
-                ).first()
+                ).first().ifBlank { AiConstants.OPENAI_DEFAULT_MODEL }
                 val openaiURL = getPreference(
                     stringPreferencesKey(PrefsConstants.OPENAI_URL_KEY),
                     AiConstants.OPENAI_BASE_URL
-                ).first()
+                ).first().ifBlank { AiConstants.OPENAI_BASE_URL }
 
                 val result = sendAiMessage(
                     prompt = message.content,
