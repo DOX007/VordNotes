@@ -61,7 +61,6 @@ class AssistantViewModel(
     var uiState by mutableStateOf(UiState())
         private set
 
-
     private var searchNotesJob: Job? = null
     private var searchTasksJob: Job? = null
 
@@ -96,14 +95,28 @@ class AssistantViewModel(
                     error = null
                 )
 
+                // Fetch API key, model, and URL from user preferences
                 val aiKey = getPreference(
                     stringPreferencesKey(PrefsConstants.OPENAI_KEY),
                     ""
                 ).first()
+
+                // Validate that API key is not empty
+                if (aiKey.isBlank()) {
+                    delay(300)
+                    _messages.removeAt(0)
+                    uiState = uiState.copy(
+                        loading = false,
+                        error = NetworkResult.InvalidKey
+                    )
+                    return@launch
+                }
+
                 val aiModel = getPreference(
                     stringPreferencesKey(PrefsConstants.OPENAI_MODEL_KEY),
                     AiConstants.OPENAI_DEFAULT_MODEL
                 ).first()
+
                 val openaiURL = getPreference(
                     stringPreferencesKey(PrefsConstants.OPENAI_URL_KEY),
                     AiConstants.OPENAI_BASE_URL

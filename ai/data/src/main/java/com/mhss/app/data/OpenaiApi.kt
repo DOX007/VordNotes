@@ -13,7 +13,10 @@ import io.ktor.client.call.body
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
+import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.appendPathSegments
 import io.ktor.http.contentType
 import kotlinx.coroutines.CoroutineDispatcher
@@ -44,10 +47,15 @@ class OpenaiApi(
         prompt: String,
         model: String
     ): NetworkResult<String> = withContext(ioDispatcher) {
-        val result = client.post(baseUrl) {
+        val key = apiKey.trim()
+        if (key.isBlank()) {
+            return@withContext NetworkResult.InvalidKey
+        }
+
+        val response: HttpResponse = client.post(baseUrl.trim()) {
             url { appendPathSegments("chat", "completions") }
             contentType(ContentType.Application.Json)
-            bearerAuth(apiKey)
+            bearerAuth(key)
             setBody(
                 OpenaiMessageRequestBody(
                     model = model,
@@ -55,14 +63,23 @@ class OpenaiApi(
                         OpenaiMessage(
                             role = NetworkConstants.OPENAI_MESSAGE_USER_TYPE,
                             content = JsonPrimitive(prompt)
-
                         )
                     )
                 )
             )
-        }.body<OpenaiResponse>()
+        }
 
-        when {
+        if (response.status == HttpStatusCode.Unauthorized) {
+            return@withContext NetworkResult.InvalidKey
+        }
+        if (response.status != HttpStatusCode.OK) {
+            return@withContext NetworkResult.OtherError(
+                "HTTP ${response.status.value}: ${response.bodyAsText()}"
+            )
+        }
+
+        val result = response.body<OpenaiResponse>()
+        return@withContext when {
             result.error != null && result.error.message.contains("API key") ->
                 NetworkResult.InvalidKey
 
@@ -86,14 +103,29 @@ class OpenaiApi(
         messages: List<AiMessage>,
         model: String
     ): NetworkResult<AiMessage> = withContext(ioDispatcher) {
-        val result = client.post(baseUrl) {
+        val key = apiKey.trim()
+        if (key.isBlank()) {
+            return@withContext NetworkResult.InvalidKey
+        }
+
+        val response: HttpResponse = client.post(baseUrl.trim()) {
             url { appendPathSegments("chat", "completions") }
             contentType(ContentType.Application.Json)
-            bearerAuth(apiKey)
+            bearerAuth(key)
             setBody(messages.toOpenAiRequestBody(model))
-        }.body<OpenaiResponse>()
+        }
 
-        when {
+        if (response.status == HttpStatusCode.Unauthorized) {
+            return@withContext NetworkResult.InvalidKey
+        }
+        if (response.status != HttpStatusCode.OK) {
+            return@withContext NetworkResult.OtherError(
+                "HTTP ${response.status.value}: ${response.bodyAsText()}"
+            )
+        }
+
+        val result = response.body<OpenaiResponse>()
+        return@withContext when {
             result.error != null && result.error.message.contains("API key") ->
                 NetworkResult.InvalidKey
 
@@ -118,6 +150,10 @@ class OpenaiApi(
         prompt: String,
         imageBase64: String
     ): NetworkResult<String> = withContext(ioDispatcher) {
+        val key = apiKey.trim()
+        if (key.isBlank()) {
+            return@withContext NetworkResult.InvalidKey
+        }
 
         val visionContent = buildJsonArray {
             add(
@@ -139,10 +175,10 @@ class OpenaiApi(
             )
         }
 
-        val result = client.post(baseUrl) {
+        val response: HttpResponse = client.post(baseUrl.trim()) {
             url { appendPathSegments("chat", "completions") }
             contentType(ContentType.Application.Json)
-            bearerAuth(apiKey)
+            bearerAuth(key)
             setBody(
                 OpenaiMessageRequestBody(
                     model = model,
@@ -154,9 +190,19 @@ class OpenaiApi(
                     )
                 )
             )
-        }.body<OpenaiResponse>()
+        }
 
-        when {
+        if (response.status == HttpStatusCode.Unauthorized) {
+            return@withContext NetworkResult.InvalidKey
+        }
+        if (response.status != HttpStatusCode.OK) {
+            return@withContext NetworkResult.OtherError(
+                "HTTP ${response.status.value}: ${response.bodyAsText()}"
+            )
+        }
+
+        val result = response.body<OpenaiResponse>()
+        return@withContext when {
             result.error != null && result.error.message.contains("API key") ->
                 NetworkResult.InvalidKey
 
