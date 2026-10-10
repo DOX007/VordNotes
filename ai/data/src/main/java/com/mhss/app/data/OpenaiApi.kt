@@ -34,23 +34,20 @@ class OpenaiApi(
     @Named("ioDispatcher") private val ioDispatcher: CoroutineDispatcher
 ) : AiApi {
 
-    // ⚠️ OBS: Flytta detta till säkrare hantering senare
-    private val aiKey =
-        "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"
-
     // =========================
     // ===== TEXT PROMPT ======
     // =========================
 
     override suspend fun sendPrompt(
         baseUrl: String,
+        apiKey: String,
         prompt: String,
         model: String
     ): NetworkResult<String> = withContext(ioDispatcher) {
         val result = client.post(baseUrl) {
             url { appendPathSegments("chat", "completions") }
             contentType(ContentType.Application.Json)
-            bearerAuth(aiKey)
+            bearerAuth(apiKey)
             setBody(
                 OpenaiMessageRequestBody(
                     model = model,
@@ -85,13 +82,14 @@ class OpenaiApi(
 
     override suspend fun sendMessage(
         baseUrl: String,
+        apiKey: String,
         messages: List<AiMessage>,
         model: String
     ): NetworkResult<AiMessage> = withContext(ioDispatcher) {
         val result = client.post(baseUrl) {
             url { appendPathSegments("chat", "completions") }
             contentType(ContentType.Application.Json)
-            bearerAuth(aiKey)
+            bearerAuth(apiKey)
             setBody(messages.toOpenAiRequestBody(model))
         }.body<OpenaiResponse>()
 
@@ -115,6 +113,7 @@ class OpenaiApi(
 
     override suspend fun sendVisionPrompt(
         baseUrl: String,
+        apiKey: String,
         model: String,
         prompt: String,
         imageBase64: String
@@ -143,7 +142,7 @@ class OpenaiApi(
         val result = client.post(baseUrl) {
             url { appendPathSegments("chat", "completions") }
             contentType(ContentType.Application.Json)
-            bearerAuth(aiKey)
+            bearerAuth(apiKey)
             setBody(
                 OpenaiMessageRequestBody(
                     model = model,
