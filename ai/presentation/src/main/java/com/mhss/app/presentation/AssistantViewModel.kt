@@ -75,10 +75,9 @@ class AssistantViewModel(
     }
 
     private val aiProvider = AiProvider.OpenAI
-    private val aiKey =
-        "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"
+    private val aiKey = "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"
     private val assistantId = "asst_CnmHqt0PONsO6GoUhyTt6b3N"
-    private val aiModel = "gpt-3.5-turbo"
+    private val aiModel = "gpt-6-sol"
     private val openaiURL = "https://api.openai.com/v1"
     val aiEnabled = true
 

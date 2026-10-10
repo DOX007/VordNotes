@@ -36,7 +36,7 @@ class OpenaiApi(
 
     // ⚠️ OBS: Flytta detta till säkrare hantering senare
     private val aiKey =
-        "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"
+        "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"
 
     // =========================
     // ===== TEXT PROMPT ======
