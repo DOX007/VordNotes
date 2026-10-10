@@ -7,6 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -25,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -42,14 +44,24 @@ fun MainBottomBar(
         currentDestination?.route == it.screen::class.qualifiedName
     }.let { if (it == -1) 0 else it }
 
-    Box(
+    BoxWithConstraints(
         modifier = Modifier
             .fillMaxWidth()
             .height(56.dp)
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
+        val bubbleSize = 60.dp
+        val rowPadding = 8.dp
+
+        // Bredd per ikon = (total bredd - radens padding på båda sidor) / antal ikoner
+        val itemWidth: Dp = (maxWidth - rowPadding * 2) / items.size
+
+        // Mitten av vald ikon minus halva bubblans storlek
+        val targetOffset: Dp =
+            rowPadding + itemWidth * selectedIndex + itemWidth / 2 - bubbleSize / 2
+
         val bubbleOffset by animateDpAsState(
-            targetValue = ((selectedIndex * 80) + 10).dp,
+            targetValue = targetOffset,
             animationSpec = spring(
                 dampingRatio = Spring.DampingRatioMediumBouncy,
                 stiffness = Spring.StiffnessLow
@@ -61,16 +73,16 @@ fun MainBottomBar(
         Box(
             modifier = Modifier
                 .offset(x = bubbleOffset)
-                .size(60.dp)
+                .size(bubbleSize)
                 .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.secondaryContainer) // ← ÄNDRAT
+                .background(MaterialTheme.colorScheme.secondaryContainer)
                 .zIndex(1f),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 painter = painterResource(items[selectedIndex].iconSelected),
                 contentDescription = stringResource(items[selectedIndex].title),
-                tint = MaterialTheme.colorScheme.onSecondaryContainer, // ← ÄNDRAT
+                tint = MaterialTheme.colorScheme.onSecondaryContainer,
                 modifier = Modifier.size(32.dp)
             )
         }
@@ -81,14 +93,14 @@ fun MainBottomBar(
                 .fillMaxWidth()
                 .height(56.dp)
                 .clip(RoundedCornerShape(24.dp))
-                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.95f)) // ← ÄNDRAT
+                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.95f))
                 .zIndex(0f),
             contentAlignment = Alignment.Center
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 8.dp),
+                    .padding(horizontal = rowPadding),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 items.forEachIndexed { index, item ->
@@ -113,7 +125,7 @@ fun MainBottomBar(
                         Icon(
                             painter = painterResource(item.icon),
                             contentDescription = stringResource(item.title),
-                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f), // ← ÄNDRAT
+                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                             modifier = Modifier.size(24.dp)
                         )
                     }
