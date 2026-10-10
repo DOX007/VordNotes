@@ -21,6 +21,8 @@ import com.mhss.app.network.NetworkResult
 import com.mhss.app.preferences.PrefsConstants
 import com.mhss.app.preferences.domain.model.AiProvider
 import com.mhss.app.preferences.domain.model.intPreferencesKey
+import com.mhss.app.preferences.domain.model.stringPreferencesKey
+import com.mhss.app.domain.AiConstants
 import com.mhss.app.preferences.domain.model.stringSetPreferencesKey
 import com.mhss.app.preferences.domain.use_case.GetPreferenceUseCase
 import com.mhss.app.ui.ItemView
@@ -75,10 +77,6 @@ class AssistantViewModel(
     }
 
     private val aiProvider = AiProvider.OpenAI
-    private val aiKey = "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"
-    private val assistantId = "asst_CnmHqt0PONsO6GoUhyTt6b3N"
-    private val aiModel = "gpt-6-sol"
-    private val openaiURL = "https://api.openai.com/v1"
     val aiEnabled = true
 
     fun onEvent(event: AssistantEvent) {
@@ -98,11 +96,25 @@ class AssistantViewModel(
                     error = null
                 )
 
+                val aiKey = getPreference(
+                    stringPreferencesKey(PrefsConstants.OPENAI_KEY),
+                    ""
+                ).first()
+                val aiModel = getPreference(
+                    stringPreferencesKey(PrefsConstants.OPENAI_MODEL_KEY),
+                    AiConstants.OPENAI_DEFAULT_MODEL
+                ).first()
+                val openaiURL = getPreference(
+                    stringPreferencesKey(PrefsConstants.OPENAI_URL_KEY),
+                    AiConstants.OPENAI_BASE_URL
+                ).first()
+
                 val result = sendAiMessage(
                     prompt = message.content,
                     model = aiModel,
                     provider = aiProvider,
-                    baseURL = openaiURL
+                    baseURL = openaiURL,
+                    apiKey = aiKey
                 )
 
                 when (result) {

@@ -198,7 +198,8 @@ class NoteDetailsViewModel(
                     prompt = visionOcrPrompt,
                     imageBase64 = base64Image,
                     model = aiModel,
-                    baseURL = openaiURL
+                    baseURL = openaiURL,
+                    apiKey = aiKey
                 )
 
                 when (result) {
@@ -229,7 +230,8 @@ class NoteDetailsViewModel(
         prompt,
         aiModel,
         aiProvider.value,
-        openaiURL
+        openaiURL,
+        aiKey
     )
 
     private fun saveNoteWithDebounce() {

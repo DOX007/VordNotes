@@ -27,13 +27,16 @@ class SendAiMessageUseCase(
         prompt: String,
         model: String,
         provider: AiProvider,
-        baseURL: String = ""
+        baseURL: String = "",
+        apiKey: String
     ): NetworkResult<String> {
+        if (apiKey.isBlank()) return NetworkResult.InvalidKey
         return try {
             when (provider) {
                 AiProvider.OpenAI -> {
                     val result = openai.sendMessage(
                         baseUrl = baseURL,
+                        apiKey = apiKey,
                         messages = listOf(
                             AiMessage(
                                 content = prompt,
@@ -90,11 +93,14 @@ class SendAiMessageUseCase(
         prompt: String,
         imageBase64: String,
         model: String,
-        baseURL: String
+        baseURL: String,
+        apiKey: String
     ): NetworkResult<String> {
+        if (apiKey.isBlank()) return NetworkResult.InvalidKey
         return try {
             openai.sendVisionPrompt(
                 baseUrl = baseURL,
+                apiKey = apiKey,
                 model = model,
                 prompt = prompt,
                 imageBase64 = imageBase64
