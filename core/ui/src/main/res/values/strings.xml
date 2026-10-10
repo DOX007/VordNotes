@@ -244,7 +244,7 @@
     <string name="exception_stack_trace_copied">Exception stack trace copied to clipboard</string>
     <string name="material_you">Material You</string>
     <string name="summarize">Summarize</string>
-    <string name="integrations">Integrations</string>
+    <string name="integrations">Ai-Integrations</string>
     <string name="api_key">API Key</string>
     <string name="ai">AI</string>
     <string name="gemini">Gemini</string>

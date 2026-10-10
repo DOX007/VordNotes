@@ -358,7 +358,15 @@ fun SettingsScreen(
                     }
                 )
             }
-
+            item {
+                SettingsBasicLinkItem(
+                    title = R.string.integrations,
+                    icon = R.drawable.ic_integrations, // byt till ikon som finns i projektet
+                    onClick = {
+                        navController.navigate(Screen.IntegrationsScreen)
+                    }
+                )
+            }
             item {
                 Spacer(Modifier.height(24.dp))
                 SettingsItemCard(

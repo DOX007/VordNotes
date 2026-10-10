@@ -249,7 +249,7 @@
     <string name="exception_stack_trace_copied">Felkod kopierad till urklipp</string>
     <string name="material_you">Material You</string>
     <string name="summarize">Minimal</string>
-    <string name="integrations">Integrationer</string>
+    <string name="integrations">Ai-Integrationer</string>
     <string name="api_key">API-nyckel</string>
     <string name="ai">AI</string>
     <string name="gemini">Gemini</string>
