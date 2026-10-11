@@ -87,6 +87,11 @@ sealed class Screen {
     ) : Screen()
 
     @Serializable
+    data class ScheduleScreen(
+        val folderId: Int
+    ) : Screen()
+
+    @Serializable
     data object ImportExportScreen : Screen()
 
     @Serializable

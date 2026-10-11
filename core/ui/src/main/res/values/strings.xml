@@ -268,4 +268,12 @@
     <string name="share_note">Documenting my note</string>
     <string name="dinner_with_ali_calender_preview">Dinner with Ali</string>
     <string name="cs_lecture_calender_preview">Computer Science Lecture</string>
+    <string name="schedule">Schedule</string>
+    <string name="schedule_empty">No tasks with times found.</string>
+    <string name="schedule_all">All</string>
+    <string name="schedule_reset_all">Reset all</string>
+    <string name="schedule_reset_label">Reset:</string>
+    <string name="schedule_reset_shift">Every shift</string>
+    <string name="schedule_reset_day">Every day</string>
+    <string name="schedule_room">room %1$s</string>
 </resources>

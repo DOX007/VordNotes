@@ -98,6 +98,14 @@ fun NoteFolderDetailsScreen(
                             contentDescription = stringResource(R.string.create_folder)
                         )
                     }
+                    IconButton(onClick = {
+                        navController.navigate(Screen.ScheduleScreen(folderId = id))
+                    }) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_time),
+                            contentDescription = stringResource(R.string.schedule)
+                        )
+                    }
                     IconButton(onClick = { openDeleteDialog = true }) {
                         Icon(
                             imageVector = Icons.Default.Delete,

@@ -21,6 +21,10 @@ object PrefsConstants {
     const val LOCK_APP_KEY = "lock_app"
     const val FONT_SIZE_KEY = "font_size"
 
+    const val SCHEDULE_CHECKED_KEY = "schedule_checked"
+    const val SCHEDULE_PERIOD_KEY = "schedule_period"
+    const val SCHEDULE_RESET_MODE_KEY = "schedule_reset_mode"
+
     const val OPENAI_URL_KEY = "openai_url"
     const val OPENAI_USE_URL_KEY = "openai_use_url"
     const val OPENAI_MODEL_KEY = "openai_model"

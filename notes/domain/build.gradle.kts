@@ -8,6 +8,7 @@ dependencies {
     implementation(project(":core:preferences"))
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.serialization.json)
+    testImplementation(libs.junit)
 
     implementation(platform(libs.koin.bom))
     implementation(libs.bundles.koin)

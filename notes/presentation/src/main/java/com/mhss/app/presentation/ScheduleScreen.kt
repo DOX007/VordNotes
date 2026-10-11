@@ -1,0 +1,192 @@
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+
+package com.mhss.app.presentation
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import com.mhss.app.domain.model.ScheduleEntry
+import com.mhss.app.domain.model.ScheduleParser
+import com.mhss.app.ui.R
+import com.mhss.app.ui.components.common.MyBrainAppBar
+import org.koin.androidx.compose.koinViewModel
+import java.util.Calendar
+
+@Composable
+fun ScheduleScreen(
+    navController: NavHostController,
+    folderId: Int,
+    viewModel: ScheduleViewModel = koinViewModel()
+) {
+    val state = viewModel.uiState
+    var selectedTasks by rememberSaveable { mutableStateOf(emptyList<String>()) }
+    val listState = rememberLazyListState()
+
+    LaunchedEffect(folderId) { viewModel.load(folderId) }
+
+    // Filter byggs dynamiskt från de uppgiftstyper som hittats
+    val taskTypes = state.entries.map { it.task }.distinctBy { it.lowercase() }.sorted()
+    val filtered = state.entries.filter { e ->
+        selectedTasks.isEmpty() || selectedTasks.any { it.equals(e.task, ignoreCase = true) }
+    }
+    val hours = ScheduleParser.sortedHours(filtered)
+    val grouped = hours.associateWith { h ->
+        filtered.filter { it.hour == h }
+            .sortedWith(compareBy<ScheduleEntry> { it.roomNumber ?: Int.MAX_VALUE }
+                .thenBy { it.room }.thenBy { it.patientName }.thenBy { it.task })
+    }
+
+    // Närmaste kommande klockslag (i nattpassordning), annars överst
+    val nowHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+    val nextHour = hours.indexOfFirst {
+        ScheduleParser.nightOrder(it) >= ScheduleParser.nightOrder(nowHour)
+    }.coerceAtLeast(0)
+
+    LaunchedEffect(hours.size) {
+        if (hours.isNotEmpty()) listState.scrollToItem(nextHour)
+    }
+
+    Scaffold(
+        containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.6f),
+        contentColor = MaterialTheme.colorScheme.onBackground,
+        topBar = {
+            MyBrainAppBar(
+                title = stringResource(R.string.schedule),
+                actions = {
+                    TextButton(onClick = { viewModel.resetAll() }) {
+                        Text(stringResource(R.string.schedule_reset_all))
+                    }
+                }
+            )
+        }
+    ) { padding ->
+        Column(Modifier.padding(padding).fillMaxSize()) {
+            Row(
+                Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(stringResource(R.string.schedule_reset_label))
+                Spacer(Modifier.width(8.dp))
+                FilterChip(
+                    selected = state.resetMode == ScheduleResetMode.SHIFT,
+                    onClick = { viewModel.setResetMode(ScheduleResetMode.SHIFT) },
+                    label = { Text(stringResource(R.string.schedule_reset_shift)) }
+                )
+                Spacer(Modifier.width(8.dp))
+                FilterChip(
+                    selected = state.resetMode == ScheduleResetMode.DAY,
+                    onClick = { viewModel.setResetMode(ScheduleResetMode.DAY) },
+                    label = { Text(stringResource(R.string.schedule_reset_day)) }
+                )
+            }
+
+            if (taskTypes.isNotEmpty()) {
+                FlowRow(
+                    Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    FilterChip(
+                        selected = selectedTasks.isEmpty(),
+                        onClick = { selectedTasks = emptyList() },
+                        label = { Text(stringResource(R.string.schedule_all)) }
+                    )
+                    taskTypes.forEach { task ->
+                        val selected = selectedTasks.contains(task)
+                        FilterChip(
+                            selected = selected,
+                            onClick = {
+                                selectedTasks = if (selected) selectedTasks - task else selectedTasks + task
+                            },
+                            label = { Text(task) }
+                        )
+                    }
+                }
+            }
+
+            if (hours.isEmpty()) {
+                Text(
+                    stringResource(R.string.schedule_empty),
+                    modifier = Modifier.padding(16.dp),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+
+            LazyColumn(
+                state = listState,
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(start = 12.dp, end = 12.dp, bottom = 24.dp)
+            ) {
+                grouped.forEach { (hour, rows) ->
+                    item(key = "h$hour") {
+                        val done = rows.count { it.checkKey in state.checked }
+                        Row(
+                            Modifier.fillMaxWidth().padding(top = 16.dp, bottom = 4.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                "%02d:00".format(hour),
+                                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                                color = if (hours.indexOf(hour) == nextHour)
+                                    MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.onBackground
+                            )
+                            Text("$done/${rows.size}", style = MaterialTheme.typography.titleMedium)
+                        }
+                    }
+                    items(rows, key = { "r${it.checkKey}" }) { entry ->
+                        val checked = entry.checkKey in state.checked
+                        Row(
+                            Modifier.fillMaxWidth().alpha(if (checked) 0.5f else 1f),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Checkbox(
+                                checked = checked,
+                                onCheckedChange = { viewModel.toggle(entry, it) }
+                            )
+                            val room = if (entry.room.isNotBlank())
+                                " – " + stringResource(R.string.schedule_room, entry.room) else ""
+                            Text(
+                                "${entry.patientName}$room – ${entry.task}",
+                                style = MaterialTheme.typography.bodyLarge,
+                                textDecoration = if (checked) TextDecoration.LineThrough else null
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

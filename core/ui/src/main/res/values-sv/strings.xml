@@ -271,5 +271,13 @@
     <string name="ai_not_enabled">AI-funktionen är inte aktiverad\nAktivera den under Integrationer i inställningarna</string>
     <string name="plain_text">Oformaterad text</string>
     <string name="share_note">Dokumentera din anteckning</string>
+    <string name="schedule">Tidsschema</string>
+    <string name="schedule_empty">Inga uppgifter med klockslag hittades.</string>
+    <string name="schedule_all">Alla</string>
+    <string name="schedule_reset_all">Nollställ alla</string>
+    <string name="schedule_reset_label">Nollställ:</string>
+    <string name="schedule_reset_shift">Varje pass</string>
+    <string name="schedule_reset_day">Varje dygn</string>
+    <string name="schedule_room">rum %1$s</string>
 </resources>
 
