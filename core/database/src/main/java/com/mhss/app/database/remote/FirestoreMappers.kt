@@ -1,5 +1,6 @@
 package com.mhss.app.database.remote
 
+import android.util.Log
 import com.mhss.app.database.entity.BookmarkEntity
 import com.mhss.app.database.entity.NoteEntity
 import com.mhss.app.database.entity.NoteFolderEntity
@@ -7,6 +8,8 @@ import com.mhss.app.database.entity.TaskEntity
 import com.mhss.app.database.entity.DiaryEntryEntity
 import com.benasher44.uuid.Uuid
 import com.mhss.app.domain.model.SubTask
+
+private const val TAG = "SYNC"
 
 private fun NoteEntity.toNoteMap(): HashMap<String, Any?> = hashMapOf(
     "title" to title,
@@ -16,6 +19,7 @@ private fun NoteEntity.toNoteMap(): HashMap<String, Any?> = hashMapOf(
     "pinned" to pinned,          // kan saknas i äldre data -> hanteras i DAO/Entity default
     "pins" to pins,              // kommaseparerade vård-pins, kan saknas i äldre data
     "folderId" to folderId,
+    "orderIndex" to orderIndex,  // drag & drop-ordning
     "id" to id
 )
 
@@ -68,14 +72,20 @@ fun taskDocToEntity(data: Map<String, Any?>): TaskEntity {
             val map = raw as? Map<*, *> ?: return@mapNotNull null
             val idValue = map["id"] ?: return@mapNotNull null
             val uuid = when (idValue) {
-                is String -> try { Uuid.fromString(idValue) } catch (e: Exception) { return@mapNotNull null }
+                is String -> try { Uuid.fromString(idValue) } catch (e: Exception) {
+                    Log.w(TAG, "taskDocToEntity: ogiltigt subtask-UUID: ${e.message}")
+                    return@mapNotNull null
+                }
                 is Number -> Uuid(0L, idValue.toLong()) // fallback om någon gammal version har int-id
                 is Map<*, *> -> {
                     val msb = (idValue["mostSigBits"] as? Number)?.toLong() ?: return@mapNotNull null
                     val lsb = (idValue["leastSigBits"] as? Number)?.toLong() ?: return@mapNotNull null
                     Uuid(msb, lsb)
                 }
-                else -> return@mapNotNull null
+                else -> {
+                    Log.w(TAG, "taskDocToEntity: okänd subtask-id-typ: ${idValue::class.simpleName}")
+                    return@mapNotNull null
+                }
             }
             SubTask(
                 id = uuid,
@@ -99,9 +109,29 @@ private fun DiaryEntryEntity.toDiaryMap(): HashMap<String, Any?> = hashMapOf(
     "id" to id
 )
 
-// Publika wrappers så repositories kan använda dem utan att känna till Entity-typen internt
-fun toNoteDoc(data: NoteEntity) = data.toNoteMap()
-fun toFolderDoc(data: NoteFolderEntity) = data.toFolderMap()
-fun toBookmarkDoc(data: BookmarkEntity) = data.toBookmarkMap()
-fun toTaskDoc(data: TaskEntity) = data.toTaskMap()
-fun toDiaryDoc(data: DiaryEntryEntity) = data.toDiaryMap()
+// Publika wrappers så repositories kan använda dem utan att känna till Entity-typen internt.
+// Loggar bara id (aldrig innehåll) för att inte läcka patientdata i logcat.
+fun toNoteDoc(data: NoteEntity): HashMap<String, Any?> {
+    Log.d(TAG, "toNoteDoc: id=${data.id}, folderId=${data.folderId}, orderIndex=${data.orderIndex}")
+    return data.toNoteMap()
+}
+
+fun toFolderDoc(data: NoteFolderEntity): HashMap<String, Any?> {
+    Log.d(TAG, "toFolderDoc: id=${data.id}, parentId=${data.parentId}")
+    return data.toFolderMap()
+}
+
+fun toBookmarkDoc(data: BookmarkEntity): HashMap<String, Any?> {
+    Log.d(TAG, "toBookmarkDoc: id=${data.id}")
+    return data.toBookmarkMap()
+}
+
+fun toTaskDoc(data: TaskEntity): HashMap<String, Any?> {
+    Log.d(TAG, "toTaskDoc: id=${data.id}")
+    return data.toTaskMap()
+}
+
+fun toDiaryDoc(data: DiaryEntryEntity): HashMap<String, Any?> {
+    Log.d(TAG, "toDiaryDoc: id=${data.id}")
+    return data.toDiaryMap()
+}

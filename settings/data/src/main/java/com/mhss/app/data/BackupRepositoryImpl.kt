@@ -130,21 +130,19 @@ class BackupRepositoryImpl(
                             backupData.noteFolders.withoutIds()
                         )
 
-                    val notes = if (newNoteFolderIds.size != oldNoteFolderIdsMap.size) {
-                        Log.d(
-                            "BackupRepositoryImpl.importDatabase",
-                            "New folder count (${newNoteFolderIds.size}) does not match old folder count (${oldNoteFolderIdsMap.size})"
-                        )
-                        backupData.notes.withoutIds()
-                    } else {
-                        backupData.notes.map { note ->
-                            note.copy(
-                                folderId = note.folderId?.let {
+                    val notes = backupData.notes.map { note ->
+                        note.copy(
+                            folderId = note.folderId?.let {
+                                if (oldNoteFolderIdsMap.containsKey(it)) {
                                     newNoteFolderIds[oldNoteFolderIdsMap[it]!!].toInt()
-                                },
-                                id = 0
-                            )
-                        }
+                                } else {
+                                    null
+                                }
+                            },
+                            id = 0,
+                            pins = note.pins  // ← EXPLICIT: bevara pins
+                        )
+
                     }
                     database.noteDao().insertNotes(notes)
                     database.taskDao().insertTasks(backupData.tasks.withoutIds())
