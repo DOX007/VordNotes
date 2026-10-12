@@ -5,8 +5,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mhss.app.domain.model.Note
 import com.mhss.app.domain.model.ScheduleEntry
 import com.mhss.app.domain.model.ScheduleParser
+import com.mhss.app.domain.use_case.GetAllNoteFoldersUseCase
 import com.mhss.app.domain.use_case.GetNotesByFolderUseCase
 import com.mhss.app.preferences.PrefsConstants
 import com.mhss.app.preferences.domain.model.Order
@@ -17,8 +19,10 @@ import com.mhss.app.preferences.domain.use_case.GetPreferenceUseCase
 import com.mhss.app.preferences.domain.use_case.SavePreferenceUseCase
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -36,6 +40,7 @@ enum class ScheduleResetMode(val value: Int) {
 @KoinViewModel
 class ScheduleViewModel(
     private val getFolderNotes: GetNotesByFolderUseCase,
+    private val getAllFolders: GetAllNoteFoldersUseCase,
     private val getPreference: GetPreferenceUseCase,
     private val savePreference: SavePreferenceUseCase,
 ) : ViewModel() {
@@ -56,17 +61,25 @@ class ScheduleViewModel(
         val resetMode: ScheduleResetMode = ScheduleResetMode.SHIFT
     )
 
-    fun load(folderId: Int) {
+    fun load(folderIds: List<Int>) {
         loadJob?.cancel()
         loadJob = viewModelScope.launch {
             resetIfNewPeriod()
+            val ids = folderIds.distinct()
+            val notesFlow: Flow<List<Pair<Int, List<Note>>>> = if (ids.isEmpty()) flowOf(emptyList()) else combine(
+                ids.map { id -> getFolderNotes(id, Order.Manual) }
+            ) { lists -> ids.zip(lists) }
             combine(
-                getFolderNotes(folderId, Order.Manual),
+                notesFlow,
+                getAllFolders(),
                 getPreference(checkedKey, emptySet()),
                 getPreference(modeKey, ScheduleResetMode.SHIFT.value)
-            ) { notes, checked, mode ->
+            ) { notesPerFolder, folders, checked, mode ->
+                val names = folders.associate { it.id to it.name }
                 UiState(
-                    entries = ScheduleParser.parseAll(notes),
+                    entries = notesPerFolder.flatMap { (id, notes) ->
+                        ScheduleParser.parseAll(notes.map { it.copy(folderId = id) }, names[id].orEmpty())
+                    },
                     checked = checked,
                     resetMode = ScheduleResetMode.fromValue(mode)
                 )

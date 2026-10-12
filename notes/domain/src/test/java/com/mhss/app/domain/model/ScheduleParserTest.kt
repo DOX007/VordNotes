@@ -39,4 +39,22 @@ class ScheduleParserTest {
         val hours = listOf(3, 0, 23, 22, 6, 1).map { ScheduleEntry(1, "a", "1", "t", it) }
         assertEquals(listOf(22, 23, 0, 1, 3, 6), ScheduleParser.sortedHours(hours))
     }
+
+    @Test
+    fun groupsByHourThenFolderThenNumericRoom() {
+        val entries = listOf(
+            ScheduleEntry(1, "A", "10", "Kamera", 22, 2, "Svalan"),
+            ScheduleEntry(2, "B", "2", "Kamera", 22, 1, "Duvan"),
+            ScheduleEntry(3, "C", "3", "Kamera", 22, 1, "Duvan"),
+            ScheduleEntry(4, "D", "1", "Tillsyn", 22, 2, "Svalan"),
+            ScheduleEntry(5, "E", "1", "Tillsyn", 23, 1, "Duvan"),
+            ScheduleEntry(6, "F", "1", "Tillsyn", 1, 1, "Duvan")
+        )
+        val groups = ScheduleParser.groupByHourAndFolder(entries)
+        assertEquals(listOf(22, 23, 1), groups.map { it.hour })
+        assertEquals(listOf("Duvan", "Svalan"), groups[0].folders.map { it.folderName })
+        assertEquals(listOf("B", "C"), groups[0].folders[0].entries.map { it.patientName })
+        assertEquals(listOf("D", "A"), groups[0].folders[1].entries.map { it.patientName })
+        assertEquals(6, groups.sumOf { it.entries.size })
+    }
 }

@@ -99,7 +99,7 @@ fun NoteFolderDetailsScreen(
                         )
                     }
                     IconButton(onClick = {
-                        navController.navigate(Screen.ScheduleScreen(folderId = id))
+                        navController.navigate(Screen.ScheduleScreen(folderIds = listOf(id)))
                     }) {
                         Icon(
                             painter = painterResource(R.drawable.ic_time),

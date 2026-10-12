@@ -45,15 +45,15 @@ import java.util.Calendar
 @Composable
 fun ScheduleScreen(
     navController: NavHostController,
-    folderId: Int,
+    folderIds: List<Int>,
     viewModel: ScheduleViewModel = koinViewModel()
 ) {
     val state = viewModel.uiState
     var selectedTasks by remember { mutableStateOf(emptyList<String>()) }
     val listState = rememberLazyListState()
 
-    LaunchedEffect(folderId) {
-        viewModel.load(folderId)
+    LaunchedEffect(folderIds) {
+        viewModel.load(folderIds)
     }
 
     val taskTypes = state.entries
@@ -65,16 +65,8 @@ fun ScheduleScreen(
         selectedTasks.isEmpty() || selectedTasks.any { it.equals(entry.task, ignoreCase = true) }
     }
 
-    val hours = ScheduleParser.sortedHours(filtered)
-    val grouped = hours.associateWith { hour ->
-        filtered.filter { it.hour == hour }
-            .sortedWith(
-                compareBy<ScheduleEntry> { it.roomNumber ?: Int.MAX_VALUE }
-                    .thenBy { it.room }
-                    .thenBy { it.patientName }
-                    .thenBy { it.task }
-            )
-    }
+    val groups = ScheduleParser.groupByHourAndFolder(filtered)
+    val hours = groups.map { it.hour }
 
     val nowHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
     val nextHour = hours.indexOfFirst {
@@ -146,7 +138,9 @@ fun ScheduleScreen(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(start = 12.dp, end = 12.dp, bottom = 24.dp)
             ) {
-                grouped.forEach { (hour, rows) ->
+                groups.forEach { group ->
+                    val hour = group.hour
+                    val rows = group.entries
                     item(key = "h$hour") {
                         val done = rows.count { it.checkKey in state.checked }
 
@@ -175,33 +169,45 @@ fun ScheduleScreen(
                         }
                     }
 
-                    items(
-                        items = rows,
-                        key = { entry -> "r${entry.checkKey}" }
-                    ) { entry ->
-                        val checked = entry.checkKey in state.checked
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .alpha(if (checked) 0.5f else 1f),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Checkbox(
-                                checked = checked,
-                                onCheckedChange = { viewModel.toggle(entry, it) }
-                            )
-
-                            val room = if (entry.room.isNotBlank()) {
-                                " – " + stringResource(R.string.schedule_room, entry.room)
-                            } else {
-                                ""
-                            }
-
+                    group.folders.forEach { folder ->
+                        item(key = "f$hour-${folder.folderId}") {
                             Text(
-                                text = "${entry.patientName}$room – ${entry.task}",
-                                style = MaterialTheme.typography.bodyLarge,
-                                textDecoration = if (checked) TextDecoration.LineThrough else null
+                                text = folder.folderName,
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontWeight = FontWeight.SemiBold
+                                ),
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(start = 8.dp, top = 8.dp)
                             )
+                        }
+                        items(
+                            items = folder.entries,
+                            key = { entry -> "r$hour-${entry.checkKey}" }
+                        ) { entry ->
+                            val checked = entry.checkKey in state.checked
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .alpha(if (checked) 0.5f else 1f),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Checkbox(
+                                    checked = checked,
+                                    onCheckedChange = { viewModel.toggle(entry, it) }
+                                )
+
+                                val room = if (entry.room.isNotBlank()) {
+                                    " – " + stringResource(R.string.schedule_room, entry.room)
+                                } else {
+                                    ""
+                                }
+
+                                Text(
+                                    text = "${entry.patientName}$room – ${entry.task}",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    textDecoration = if (checked) TextDecoration.LineThrough else null
+                                )
+                            }
                         }
                     }
                 }

@@ -88,7 +88,7 @@ sealed class Screen {
 
     @Serializable
     data class ScheduleScreen(
-        val folderId: Int
+        val folderIds: List<Int>
     ) : Screen()
 
     @Serializable

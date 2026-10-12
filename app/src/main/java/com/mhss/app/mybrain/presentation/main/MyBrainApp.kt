@@ -348,7 +348,7 @@ fun MyBrainApp(
                             val args = it.toRoute<Screen.ScheduleScreen>()
                             ScheduleScreen(
                                 navController = navController,
-                                folderId = args.folderId
+                                folderIds = args.folderIds
                             )
                         }
                         composable<Screen.ImportExportScreen>(
