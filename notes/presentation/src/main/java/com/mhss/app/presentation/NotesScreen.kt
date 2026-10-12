@@ -59,7 +59,6 @@ fun NotesScreen(
     var orderSettingsVisible by remember { mutableStateOf(false) }
     var selectedTab by rememberSaveable { mutableIntStateOf(0) }
     var openCreateFolderDialog by remember { mutableStateOf(false) }
-    var selectedFolderIds by rememberSaveable { mutableStateOf(emptyList<Int>()) }
     val snackbarHostState = remember { SnackbarHostState() }
     var addNoteOnce by rememberSaveable { mutableStateOf(addNote) }
     var combineUrl by rememberSaveable { mutableStateOf("https://idp.vannas.se/wa/auth?authmech=Smart%20ID") }
@@ -85,7 +84,7 @@ fun NotesScreen(
     }
 
     fun Long.formatTime(): String {
-        val sdf = SimpleDateFormat("MMM dd,yyyy h:mm", Locale.getDefault())
+        val sdf = SimpleDateFormat("MMM dd, yyyy  HH:mm", Locale.getDefault())
         return sdf.format(this)
     }
 
@@ -111,18 +110,6 @@ fun NotesScreen(
                     1 -> stringResource(R.string.folders)
                     2 -> stringResource(R.string.combine)
                     else -> ""
-                },
-                actions = {
-                    if (selectedTab == 1 && selectedFolderIds.isNotEmpty()) {
-                        IconButton(onClick = {
-                            navController.navigate(Screen.ScheduleScreen(folderIds = selectedFolderIds))
-                        }) {
-                            Icon(
-                                painter = painterResource(R.drawable.ic_time),
-                                contentDescription = stringResource(R.string.schedule)
-                            )
-                        }
-                    }
                 }
             )
         },
@@ -268,8 +255,11 @@ fun NotesScreen(
 
                                         Text(
                                             text = note.updatedDate.formatTime(),
-                                            style = MaterialTheme.typography.bodySmall
+                                            style = MaterialTheme.typography.titleMedium,
+                                            modifier = Modifier.fillMaxWidth(),
+                                            textAlign = TextAlign.End
                                         )
+
                                     }
                                 }
                             }
@@ -328,14 +318,7 @@ fun NotesScreen(
                 }
 
                 1 -> {
-                    FoldersTab(
-                        folders = uiState.folders,
-                        selectedIds = selectedFolderIds,
-                        onSelectionChange = { id, selected ->
-                            selectedFolderIds =
-                                if (selected) (selectedFolderIds + id).distinct() else selectedFolderIds - id
-                        }
-                    ) {
+                    FoldersTab(uiState.folders) {
                         navController.navigate(
                             Screen.NoteFolderDetailsScreen(folderId = it.id)
                         )
@@ -374,8 +357,6 @@ fun NotesScreen(
 @Composable
 fun FoldersTab(
     folders: List<NoteFolder>,
-    selectedIds: List<Int> = emptyList(),
-    onSelectionChange: (Int, Boolean) -> Unit = { _, _ -> },
     onItemClick: (NoteFolder) -> Unit
 ) {
     LazyVerticalGrid(
@@ -392,12 +373,6 @@ fun FoldersTab(
                 shape = RoundedCornerShape(20.dp),
                 elevation = CardDefaults.elevatedCardElevation(8.dp)
             ) {
-                Box(Modifier.fillMaxSize()) {
-                Checkbox(
-                    checked = folder.id in selectedIds,
-                    onCheckedChange = { onSelectionChange(folder.id, it) },
-                    modifier = Modifier.align(Alignment.TopEnd)
-                )
                 Column(
                     Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Center,
@@ -415,7 +390,6 @@ fun FoldersTab(
                         overflow = TextOverflow.Ellipsis,
                         textAlign = TextAlign.Center
                     )
-                }
                 }
             }
         }

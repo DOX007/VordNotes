@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -22,6 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -63,6 +65,9 @@ fun NoteFolderDetailsScreen(
     var openEditDialog by remember { mutableStateOf(false) }
     var openCreateSubfolderDialog by remember { mutableStateOf(false) }
 
+    // Valda avdelningar (underavdelningar) som ska visas i Tidsschema
+    var selectedSubfolderIds by rememberSaveable { mutableStateOf(emptyList<Int>()) }
+
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -98,8 +103,14 @@ fun NoteFolderDetailsScreen(
                             contentDescription = stringResource(R.string.create_folder)
                         )
                     }
+                    // Tidsschema: valda avdelningar, annars den här mappen
                     IconButton(onClick = {
-                        navController.navigate(Screen.ScheduleScreen(folderIds = listOf(id)))
+                        val ids = if (selectedSubfolderIds.isNotEmpty()) {
+                            selectedSubfolderIds
+                        } else {
+                            listOf(id)
+                        }
+                        navController.navigate(Screen.ScheduleScreen(folderIds = ids))
                     }) {
                         Icon(
                             painter = painterResource(R.drawable.ic_time),
@@ -160,7 +171,7 @@ fun NoteFolderDetailsScreen(
             contentPadding = PaddingValues(start = 12.dp, end = 12.dp, bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // Subfolders
+            // Subfolders (avdelningar)
             if (subfolders.isNotEmpty()) {
                 item {
                     Text(
@@ -170,7 +181,7 @@ fun NoteFolderDetailsScreen(
                     )
                 }
 
-                items(subfolders) { subfolder ->
+                items(subfolders, key = { it.id }) { subfolder ->
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -184,12 +195,30 @@ fun NoteFolderDetailsScreen(
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(16.dp)
+                            modifier = Modifier.padding(
+                                start = 8.dp,
+                                end = 16.dp,
+                                top = 8.dp,
+                                bottom = 8.dp
+                            )
                         ) {
+                            Checkbox(
+                                checked = subfolder.id in selectedSubfolderIds,
+                                onCheckedChange = { checked ->
+                                    selectedSubfolderIds =
+                                        if (checked) {
+                                            (selectedSubfolderIds + subfolder.id).distinct()
+                                        } else {
+                                            selectedSubfolderIds - subfolder.id
+                                        }
+                                }
+                            )
                             Text(
                                 text = subfolder.name,
                                 style = MaterialTheme.typography.titleMedium,
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(start = 4.dp)
                             )
                             Icon(
                                 painter = painterResource(R.drawable.ic_medicine),
