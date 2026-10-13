@@ -57,4 +57,18 @@ class ScheduleParserTest {
         assertEquals(listOf("D", "A"), groups[0].folders[1].entries.map { it.patientName })
         assertEquals(6, groups.sumOf { it.entries.size })
     }
+
+    @Test
+    fun infoLineAssociatesToPreviousTimeLine() {
+        val noteWithInfo = Note(
+            id = 2,
+            title = "Testpatient 3",
+            content = "Rum: 3\nTillsyn: 23- 02- 05\n-info: byt skydd vid 02:00\nKamera: 22-03"
+        )
+
+        val entries = ScheduleParser.parse(noteWithInfo)
+        // Hitta Tillsyn entry för hour == 2
+        val entryAt02 = entries.first { it.task.equals("Tillsyn", ignoreCase = true) && it.hour == 2 }
+        assertEquals("byt skydd vid 02:00", entryAt02.info)
+    }
 }

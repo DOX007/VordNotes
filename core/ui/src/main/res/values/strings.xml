@@ -275,5 +275,5 @@
     <string name="schedule_reset_label">Reset:</string>
     <string name="schedule_reset_shift">Every shift</string>
     <string name="schedule_reset_day">Every day</string>
-    <string name="schedule_room">room %1$s</string>
+    <string name="schedule_room">rom %1$s</string>
 </resources>
