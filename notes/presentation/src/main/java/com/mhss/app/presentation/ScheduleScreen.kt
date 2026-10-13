@@ -40,6 +40,7 @@ import androidx.navigation.NavHostController
 import com.mhss.app.domain.model.ScheduleEntry
 import com.mhss.app.domain.model.ScheduleParser
 import com.mhss.app.ui.R
+import androidx.compose.ui.unit.sp
 import com.mhss.app.ui.components.common.MyBrainAppBar
 import org.koin.androidx.compose.koinViewModel
 import java.util.Calendar
@@ -216,7 +217,8 @@ fun ScheduleScreen(
                                         Spacer(modifier = Modifier.height(4.dp))
                                         Text(
                                             text = entry.info,
-                                            style = MaterialTheme.typography.bodySmall,
+                                            // Byter fontstorlek här — exempel: 14.sp
+                                            style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
                                             color = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
                                     }

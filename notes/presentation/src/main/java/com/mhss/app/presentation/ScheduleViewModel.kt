@@ -48,8 +48,6 @@ class ScheduleViewModel(
 
     companion object {
         private const val TAG = "ScheduleDebug"
-        // Pass: ett nattpass räknas från kl 12:00 till 12:00 nästa dag (kvällen 18:00 och framåt
-        // tillhör alltså samma pass som natten efter midnatt). Dygn: nollställs vid midnatt.
         private const val SHIFT_START_HOUR = 12
 
         fun currentPeriod(mode: ScheduleResetMode, now: Calendar = Calendar.getInstance()): String {
@@ -80,7 +78,6 @@ class ScheduleViewModel(
         loadJob?.cancel()
         loadJob = viewModelScope.launch {
             resetIfNewPeriod()
-
             val ids = folderIds.distinct()
             Log.d(TAG, "load() called with folderIds=$ids")
 
@@ -103,32 +100,33 @@ class ScheduleViewModel(
             ) { notesPerFolder, folders, checked, mode, keywordsCsv ->
                 val names = folders.associate { it.id to it.name }
 
-                // Bygg parsed entries och logga detaljer per folder
                 val parsedEntries = notesPerFolder.flatMap { (id, notes) ->
-                    // Logga vilka notes som hämtats för denna folder
                     val noteTitles = notes.map { it.title }
                     Log.d(TAG, "folder=$id name=${names[id].orEmpty()} notesCount=${notes.size} titles=$noteTitles")
 
-                    // Kör parsern för denna folders notes
                     val parsed = ScheduleParser.parseAll(notes.map { it.copy(folderId = id) }, names[id].orEmpty())
-
-                    // Logga parsade entries för denna folder (inkl. info)
                     val parsedStrings = parsed.map { "${it.patientName}|${it.task}|${it.hour}|info=${it.info}" }
                     Log.d(TAG, "folder=$id parsedCount=${parsed.size} parsed=$parsedStrings")
-
                     parsed
                 }
 
                 Log.d(TAG, "total parsed entries count=${parsedEntries.size}")
 
-                // Apply keywords filtering if configured
                 val finalEntries = if (keywordsCsv.isNullOrBlank()) {
                     parsedEntries
                 } else {
-                    val kws = keywordsCsv.split(",").map { it.trim().lowercase() }.filter { it.isNotEmpty() }
-                    if (kws.isEmpty()) parsedEntries else parsedEntries.filter { entry ->
-                        val t = entry.task.lowercase()
-                        kws.any { kw -> t.contains(kw) }
+                    val keywords = keywordsCsv
+                        .split(",")
+                        .map { it.trim().lowercase() }
+                        .filter { it.isNotEmpty() }
+
+                    if (keywords.isEmpty()) {
+                        parsedEntries
+                    } else {
+                        parsedEntries.filter { entry ->
+                            val task = entry.task.lowercase()
+                            keywords.any { keyword -> task.contains(keyword) }
+                        }
                     }
                 }
 
@@ -171,7 +169,6 @@ class ScheduleViewModel(
         }
     }
 
-    // Nollställer avbockningar automatiskt när ett nytt pass/dygn har börjat.
     private suspend fun resetIfNewPeriod() {
         val mode = ScheduleResetMode.fromValue(getPreference(modeKey, ScheduleResetMode.SHIFT.value).first())
         val period = currentPeriod(mode)

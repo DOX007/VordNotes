@@ -134,6 +134,53 @@ fun SettingsScreen(
                     }
                 }
             }
+
+            item {
+                val keywordsFlow = viewModel.getSettings(
+                    stringPreferencesKey(PrefsConstants.SCHEDULE_KEYWORDS_KEY),
+                    ""
+                ).collectAsStateWithLifecycle("")
+                var showKeywordsDialog by rememberSaveable { mutableStateOf(false) }
+                if (showKeywordsDialog) {
+                    var text by remember { mutableStateOf(keywordsFlow.value) }
+                    AlertDialog(
+                        onDismissRequest = { showKeywordsDialog = false },
+                        title = { Text("Redigera Schedule-ord") },
+                        text = {
+                            OutlinedTextField(
+                                value = text,
+                                onValueChange = { text = it },
+                                label = { Text("Kommaseparerade ord (t.ex. Tillsyn, Kamera)") },
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        },
+                        confirmButton = {
+                            TextButton(onClick = {
+                                viewModel.saveSettings(
+                                    stringPreferencesKey(PrefsConstants.SCHEDULE_KEYWORDS_KEY),
+                                    text.trim()
+                                )
+                                showKeywordsDialog = false
+                            }) { Text(stringResource(android.R.string.ok)) }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { showKeywordsDialog = false }) { Text(stringResource(android.R.string.cancel)) }
+                        }
+                    )
+                }
+
+                SettingsItemCard(
+                    cornerRadius = 16.dp,
+                    onClick = { showKeywordsDialog = true }
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(painter = painterResource(R.drawable.ic_schedule), contentDescription = null, modifier = Modifier.size(24.dp))
+                        Spacer(Modifier.width(12.dp))
+                        Text(text = "Redigera Schedule-ord", style = MaterialTheme.typography.bodyLarge)
+                    }
+                }
+            }
+
             item {
                 val menuStyle by viewModel
                     .getSettings(
