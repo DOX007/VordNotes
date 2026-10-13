@@ -24,6 +24,7 @@ object PrefsConstants {
     const val SCHEDULE_CHECKED_KEY = "schedule_checked"
     const val SCHEDULE_PERIOD_KEY = "schedule_period"
     const val SCHEDULE_RESET_MODE_KEY = "schedule_reset_mode"
+    const val SCHEDULE_KEYWORDS_KEY = "schedule_keywords"
 
     const val OPENAI_URL_KEY = "openai_url"
     const val OPENAI_USE_URL_KEY = "openai_use_url"
