@@ -18,10 +18,10 @@
     <string name="nexus_smart_id_url">https://apkpure.com/nexus-smart-id/com.nexusgroup.personal.mobile/</string>
 
     <string name="notes_subtitle">Write notes / Care units</string>
-    <string name="tasks_subtitle">Medications and set reminders</string>
+    <string name="tasks_subtitle">Medications and alarms</string>
     <string name="diary_subtitle">Create medical follow-ups</string>
     <string name="bookmarks_subtitle">Medical information</string>
-    <string name="calendar_subtitle">Create and view calendar events</string>
+    <string name="calendar_subtitle">Create calendar events</string>
     <string name="assistant_subtitle">Get medical assistance</string>
 
     <string name="manual_order">Manual order</string>

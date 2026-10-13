@@ -19,10 +19,10 @@
 
 
     <string name="notes_subtitle">Skriv anteckningar / Vårdenheter</string>
-    <string name="tasks_subtitle">Hantera mediciner och ställ in larm</string>
+    <string name="tasks_subtitle">Skapa Medicin larm</string>
     <string name="diary_subtitle">Skapa medicinska uppföljningar</string>
     <string name="bookmarks_subtitle">Medicinsk information</string>
-    <string name="calendar_subtitle">Skapa och visa kalenderhändelser</string>
+    <string name="calendar_subtitle">Skapa kalenderhändelser</string>
     <string name="assistant_subtitle">Ställ frågor och få medicinsk hjälp</string>
 
     <string name="manual_order">Manuall order</string>

@@ -6,48 +6,51 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CornerBasedShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.mhss.app.ui.components.common.GlassSurface
-import com.mhss.app.ui.R
-import com.mhss.app.ui.theme.Blue
-import com.mhss.app.ui.theme.MyBrainTheme
 import kotlinx.coroutines.delay
-import sv.lib.squircleshape.SquircleShape
-import androidx.compose.ui.unit.Dp
 
 @Composable
 fun SpaceCardGrid(
     title: String,
+    subtitle: String = "",
     image: Int,
     backgroundColor: Color,
     modifier: Modifier = Modifier,
-    contentModifier: Modifier = Modifier,
+    textColor: Color = Color.White,
     isPulsing: Boolean = false,
-    onClick: () -> Unit = {},
-    offsetY: Dp = 0.dp
+    cardShape: CornerBasedShape = RoundedCornerShape(28.dp),
+    imageAlignment: Alignment = Alignment.TopStart,
+    onClick: () -> Unit = {}
 ) {
-    val shape = SquircleShape(
-        64.dp,
-        cornerSmoothing = 0.8f
-    )
-
-    // 🔥 Heartbeat logic (active only if isPulsing == true)
     var heartbeatPhase by remember { mutableStateOf(false) }
-    var isPressed by remember { mutableStateOf(false) }
 
     LaunchedEffect(isPulsing) {
         if (isPulsing) {
@@ -65,80 +68,76 @@ fun SpaceCardGrid(
     }
 
     val scale by animateFloatAsState(
-        targetValue = when {
-            isPressed -> 0.92f
-            heartbeatPhase -> 1.05f
-            else -> 1f
-        },
-        animationSpec = tween(durationMillis = 120),
+        targetValue = if (heartbeatPhase) 1.03f else 1f,
+        animationSpec = tween(120),
         label = "cardScale"
     )
 
     val interactionSource = remember { MutableInteractionSource() }
 
-    GlassSurface(
+    Box(
         modifier = modifier
-            .padding(13.dp)
-            .offset(y = offsetY)
-            .aspectRatio(1f)
             .scale(scale)
+            .clip(cardShape)
+            .background(
+                Brush.linearGradient(
+                    listOf(backgroundColor, backgroundColor.copy(alpha = 0.8f))
+                )
+            )
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
                 onClick = onClick
-            ),
-        shape = shape,
-        backgroundColor = backgroundColor.copy(alpha = 0.1f),
-        borderColor = Color.White.copy(alpha = 0.40f),
-        elevation = 0.dp,  // 🔹 FÖRSTÄRKT SKUGGA (från 10dp)
-        shadowColor = backgroundColor  // 🔹 NYT: Färgad skugga
+            )
+            .padding(16.dp)
     ) {
-        // 🔹 HELT ENKELT: Text + Image, ingen inner container
-        Column(
-            modifier = contentModifier
-                .fillMaxSize()
-                .background(
-                    Brush.linearGradient(
-                        colors = listOf(
-                            backgroundColor.copy(alpha = 0.50f),
-                            backgroundColor.copy(alpha = 0.05f)
-                        )
-                    )
+        // Ikon-lager
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = imageAlignment
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(75.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(textColor.copy(alpha = 0f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(id = image),
+                    contentDescription = title,
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier.size(75.dp)
                 )
-                .padding(20.dp),
-            verticalArrangement = Arrangement.SpaceBetween,
-            horizontalAlignment = Alignment.Start
+            }
+        }
+
+        // Text-lager
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Bottom
         ) {
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleMedium.copy(
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
+                    fontSize = 18.sp,
+                    color = textColor
                 ),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
 
-            Image(
-                painter = painterResource(id = image),
-                contentDescription = title,
-                modifier = Modifier
-                    .size(80.dp)
-                    .align(Alignment.End)
-            )
+            if (subtitle.isNotEmpty()) {
+                Spacer(Modifier.height(2.dp))
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        color = textColor.copy(alpha = 0.75f)
+                    ),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun SpaceCardGridPreview() {
-    MyBrainTheme {
-        SpaceCardGrid(
-            title = "Notes",
-            image = R.drawable.notes_img,
-            backgroundColor = Blue
-        )
     }
 }
