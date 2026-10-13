@@ -68,6 +68,7 @@ class ScheduleViewModel(
     private val checkedKey = stringSetPreferencesKey(PrefsConstants.SCHEDULE_CHECKED_KEY)
     private val periodKey = stringPreferencesKey(PrefsConstants.SCHEDULE_PERIOD_KEY)
     private val modeKey = intPreferencesKey(PrefsConstants.SCHEDULE_RESET_MODE_KEY)
+    private val keywordsKey = stringPreferencesKey(PrefsConstants.SCHEDULE_KEYWORDS_KEY)
 
     data class UiState(
         val entries: List<ScheduleEntry> = emptyList(),
@@ -97,8 +98,9 @@ class ScheduleViewModel(
                 notesFlow,
                 getAllFolders(),
                 getPreference(checkedKey, emptySet()),
-                getPreference(modeKey, ScheduleResetMode.SHIFT.value)
-            ) { notesPerFolder, folders, checked, mode ->
+                getPreference(modeKey, ScheduleResetMode.SHIFT.value),
+                getPreference(keywordsKey, "")
+            ) { notesPerFolder, folders, checked, mode, keywordsCsv ->
                 val names = folders.associate { it.id to it.name }
 
                 // Bygg parsed entries och logga detaljer per folder
@@ -119,8 +121,19 @@ class ScheduleViewModel(
 
                 Log.d(TAG, "total parsed entries count=${parsedEntries.size}")
 
+                // Apply keywords filtering if configured
+                val finalEntries = if (keywordsCsv.isNullOrBlank()) {
+                    parsedEntries
+                } else {
+                    val kws = keywordsCsv.split(",").map { it.trim().lowercase() }.filter { it.isNotEmpty() }
+                    if (kws.isEmpty()) parsedEntries else parsedEntries.filter { entry ->
+                        val t = entry.task.lowercase()
+                        kws.any { kw -> t.contains(kw) }
+                    }
+                }
+
                 UiState(
-                    entries = parsedEntries,
+                    entries = finalEntries,
                     checked = checked,
                     resetMode = ScheduleResetMode.fromValue(mode)
                 )
