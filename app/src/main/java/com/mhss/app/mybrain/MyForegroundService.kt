@@ -6,7 +6,9 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
+import android.content.pm.ServiceInfo
 import android.os.Build
+import android.util.Log
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.mhss.app.mybrain.presentation.main.MainActivity
@@ -28,9 +30,12 @@ class MyForegroundService : Service() {
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
+        ensureForeground()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        // Must come first so startForegroundService() is always satisfied in time
+        ensureForeground()
 
         intent?.let {
             if (
@@ -44,17 +49,30 @@ class MyForegroundService : Service() {
             }
         }
 
-        val notification = buildNotification()
-
-        if (!isForegroundStarted) {
-            startForeground(1000001, notification)
-            isForegroundStarted = true
-        } else {
-            val manager = getSystemService(NotificationManager::class.java)
-            manager.notify(1000001, notification)
+        try {
+            getSystemService(NotificationManager::class.java)
+                .notify(1000001, buildNotification())
+        } catch (e: Exception) {
+            Log.e("MyForegroundService", "Failed to update notification", e)
         }
 
         return START_STICKY
+    }
+
+    private fun ensureForeground() {
+        if (isForegroundStarted) return
+        val minimal = NotificationCompat.Builder(this, "my_service_channel")
+            .setSmallIcon(UiR.drawable.ic_medicine)
+            .setContentTitle(getString(UiR.string.foreground_service_default_title))
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setOngoing(true)
+            .build()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(1000001, minimal, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
+        } else {
+            startForeground(1000001, minimal)
+        }
+        isForegroundStarted = true
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -131,12 +149,22 @@ class MyForegroundService : Service() {
             setPackage(packageName)
         }
 
-        val restartPendingIntent = PendingIntent.getService(
-            this,
-            0,
-            restartIntent,
-            PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
-        )
+        val restartPendingIntent =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                PendingIntent.getForegroundService(
+                    this,
+                    0,
+                    restartIntent,
+                    PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
+                )
+            } else {
+                PendingIntent.getService(
+                    this,
+                    0,
+                    restartIntent,
+                    PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
+                )
+            }
 
         val alarmManager =
             getSystemService(Context.ALARM_SERVICE) as AlarmManager

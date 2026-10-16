@@ -92,12 +92,17 @@ fun PermissionsScreen() {
                 ) { checked ->
                     if (checked) {
                         val intent = Intent().setClassName(context, serviceClassName)
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            context.startForegroundService(intent)
-                        } else {
-                            context.startService(intent)
+                        try {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                context.startForegroundService(intent)
+                            } else {
+                                context.startService(intent)
+                            }
+                            isServiceRunning = true
+                        } catch (e: Exception) {
+                            // e.g. ForegroundServiceStartNotAllowedException (API 31+)
+                            isServiceRunning = false
                         }
-                        isServiceRunning = true
                     } else {
                         context.stopService(Intent().setClassName(context, serviceClassName))
                         isServiceRunning = false
