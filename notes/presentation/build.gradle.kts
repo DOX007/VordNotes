@@ -24,8 +24,8 @@ android {
                 "proguard-rules.pro"
             )
         }
-    }
-    android {
+
+
         packaging {
             resources {
                 // Samma stil: en rad per mönster med {…}-gruppering
@@ -76,7 +76,6 @@ dependencies {
     implementation(project(":notes:domain"))
     implementation(project(":ai:presentation"))
     implementation(project(":ai:domain"))
-    implementation(project(":core:util"))
     
     implementation(project(":core:ui"))
     implementation(project(":core:preferences"))
