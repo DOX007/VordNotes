@@ -3,6 +3,7 @@ package com.mhss.app.mybrain
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.util.Log
 import org.koin.core.annotation.Single
 
 @Single
@@ -48,10 +49,15 @@ class AlarmServiceUpdater(
      * Startar service korrekt på alla Android-versioner
      */
     private fun startServiceCompat(intent: Intent) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            context.startForegroundService(intent)
-        } else {
-            context.startService(intent)
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(intent)
+            } else {
+                context.startService(intent)
+            }
+        } catch (e: Exception) {
+            // e.g. ForegroundServiceStartNotAllowedException (API 31+)
+            Log.e("AlarmServiceUpdater", "Could not start foreground service", e)
         }
     }
 }
