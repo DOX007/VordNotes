@@ -176,10 +176,15 @@ class MainActivity : AppCompatActivity() {
 
     private fun startMyForegroundService() {
         val intent = Intent(this, MyForegroundService::class.java)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(intent)
-        } else {
-            startService(intent)
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(intent)
+            } else {
+                startService(intent)
+            }
+        } catch (e: Exception) {
+            // e.g. ForegroundServiceStartNotAllowedException (API 31+)
+            android.util.Log.e("MainActivity", "Could not start foreground service", e)
         }
     }
 
