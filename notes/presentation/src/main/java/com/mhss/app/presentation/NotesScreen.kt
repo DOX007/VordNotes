@@ -46,6 +46,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
 import android.content.Intent
 import android.widget.Toast
+import androidx.compose.ui.graphics.graphicsLayer
 
 @Composable
 fun NotesScreen(
@@ -61,7 +62,7 @@ fun NotesScreen(
     var openCreateFolderDialog by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
     var addNoteOnce by rememberSaveable { mutableStateOf(addNote) }
-    var combineUrl by rememberSaveable { mutableStateOf("https://idp.vannas.se/wa/auth?authmech=Smart%20ID") }
+    var combineUrl by rememberSaveable { mutableStateOf("https://vannas.se") }
     var combineSavedUrl by rememberSaveable { mutableStateOf<String?>(null) }
     val context = LocalContext.current
 
@@ -224,7 +225,11 @@ fun NotesScreen(
                                             )
                                         },
                                     shape = RoundedCornerShape(16.dp),
-                                    elevation = CardDefaults.cardElevation(4.dp)
+                                    elevation = CardDefaults.cardElevation(0.dp),
+                                    // ÄNDRAD: Använder surfaceVariant istället för surface för att få rätt mörka grundfärg
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f)
+                                    )
                                 ) {
 
                                     Column(
@@ -368,7 +373,8 @@ fun FoldersTab(
         items(folders.filter { it.parentId == null }) { folder ->
             Card(
                 modifier = Modifier
-                    .height(180.dp)
+                    .height(120.dp) // MINSKAD: Ändrat från 180.dp till 120.dp
+                    .graphicsLayer(alpha = 0.55f)
                     .clickable { onItemClick(folder) },
                 shape = RoundedCornerShape(20.dp),
                 elevation = CardDefaults.elevatedCardElevation(8.dp)
@@ -381,11 +387,12 @@ fun FoldersTab(
                     Icon(
                         painter = painterResource(R.drawable.ic_home),
                         contentDescription = null,
-                        modifier = Modifier.size(100.dp)
+                        modifier = Modifier.size(48.dp) // MINSKAD: Ändrat från 100.dp till 48.dp
                     )
+                    Spacer(modifier = Modifier.height(8.dp)) // Tillagt för lite luft mellan ikon och text
                     Text(
                         text = folder.name,
-                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold), // Ändrat till titleMedium för att passa bättre
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
                         textAlign = TextAlign.Center
@@ -395,6 +402,7 @@ fun FoldersTab(
         }
     }
 }
+
 
 @Composable
 fun CombineTab(
@@ -614,6 +622,7 @@ fun CreateFolderDialog(
                 onValueChange = { name = it },
                 label = { Text(stringResource(R.string.name)) }
             )
+
         },
         confirmButton = {
             Button(onClick = { onCreate(name) }) {

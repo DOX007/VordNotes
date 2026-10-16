@@ -44,9 +44,10 @@ fun NoteCard(
     Card(
         modifier = modifier.clip(RoundedCornerShape(20.dp)),
         shape = RoundedCornerShape(20.dp),
-        elevation = CardDefaults.elevatedCardElevation(
-            8.dp
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f)
         ),
+        elevation = CardDefaults.elevatedCardElevation(0.dp),
         onClick = { onClick(note) }
     ) {
         Column(

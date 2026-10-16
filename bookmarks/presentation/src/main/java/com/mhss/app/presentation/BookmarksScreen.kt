@@ -43,19 +43,18 @@ fun BookmarksScreen(
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     var orderSettingsVisible by remember { mutableStateOf(false) }
+
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.6f),
-        contentColor   = MaterialTheme.colorScheme.onBackground,
-        snackbarHost = { SnackbarHost(snackbarHostState)},
+        contentColor = MaterialTheme.colorScheme.onBackground,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             MyBrainAppBar(stringResource(R.string.bookmarks))
         },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    navController.navigate(
-                        Screen.BookmarkDetailScreen()
-                    )
+                    navController.navigate(Screen.BookmarkDetailScreen())
                 },
                 containerColor = MaterialTheme.colorScheme.primary,
             ) {
@@ -68,13 +67,16 @@ fun BookmarksScreen(
             }
         },
     ) { paddingValues ->
-        if (uiState.bookmarks.isEmpty())
-            NoBookmarksMessage()
-        Column {
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
             Row(
-                Modifier
+                modifier = Modifier
                     .fillMaxWidth()
-                    .padding(paddingValues),
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -95,6 +97,7 @@ fun BookmarksScreen(
                     )
                 }
             }
+
             AnimatedVisibility(visible = orderSettingsVisible) {
                 BookmarksSettingsSection(
                     uiState.bookmarksOrder,
@@ -107,41 +110,24 @@ fun BookmarksScreen(
                     }
                 )
             }
-            if (uiState.bookmarksView == ItemView.LIST) {
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    contentPadding = PaddingValues(12.dp)
-                ) {
-                    items(uiState.bookmarks, key = { it.id }) { bookmark ->
-                        BookmarkItem(
-                            bookmark = bookmark,
-                            onClick = {
-                                navController.navigate(
-                                    Screen.BookmarkDetailScreen(
-                                        bookmarkId = bookmark.id
-                                    )
-                                )
-                            },
-                            onInvalidUrl = {
-                                scope.launch {
-                                    snackbarHostState.showSnackbar(
-                                        context.getString(R.string.invalid_url)
-                                    )
-                                }
-                            },
-                            modifier = Modifier.animateItem()
-                        )
-                    }
-                }
+
+            if (uiState.bookmarks.isEmpty()) {
+                NoBookmarksMessage(
+                    modifier = Modifier.weight(1f)
+                )
             } else {
-                LazyVerticalGrid(
-                    columns = GridCells.Adaptive(150.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    contentPadding = PaddingValues(12.dp)
-                ) {
-                    items(uiState.bookmarks) { bookmark ->
-                        key(bookmark.id) {
+                if (uiState.bookmarksView == ItemView.LIST) {
+                    LazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        contentPadding = PaddingValues(
+                            start = 12.dp,
+                            top = 12.dp,
+                            end = 12.dp,
+                            bottom = 120.dp
+                        ),
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        items(uiState.bookmarks, key = { it.id }) { bookmark ->
                             BookmarkItem(
                                 bookmark = bookmark,
                                 onClick = {
@@ -158,10 +144,46 @@ fun BookmarksScreen(
                                         )
                                     }
                                 },
-                                modifier = Modifier
-                                    .animateItem()
-                                    .height(220.dp)
+                                modifier = Modifier.animateItem()
                             )
+                        }
+                    }
+                } else {
+                    LazyVerticalGrid(
+                        columns = GridCells.Adaptive(150.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        contentPadding = PaddingValues(
+                            start = 12.dp,
+                            top = 12.dp,
+                            end = 12.dp,
+                            bottom = 120.dp
+                        ),
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        items(uiState.bookmarks) { bookmark ->
+                            key(bookmark.id) {
+                                BookmarkItem(
+                                    bookmark = bookmark,
+                                    onClick = {
+                                        navController.navigate(
+                                            Screen.BookmarkDetailScreen(
+                                                bookmarkId = bookmark.id
+                                            )
+                                        )
+                                    },
+                                    onInvalidUrl = {
+                                        scope.launch {
+                                            snackbarHostState.showSnackbar(
+                                                context.getString(R.string.invalid_url)
+                                            )
+                                        }
+                                    },
+                                    modifier = Modifier
+                                        .animateItem()
+                                        .height(220.dp)
+                                )
+                            }
                         }
                     }
                 }
@@ -196,6 +218,7 @@ fun BookmarksSettingsSection(
             ItemView.GRID
         )
     }
+
     Column(
         Modifier.background(color = Color.Transparent)
     ) {
@@ -253,9 +276,7 @@ fun BookmarksSettingsSection(
                         selected = view.title == it.title,
                         onClick = {
                             if (view.title != it.title)
-                                onViewChange(
-                                    it
-                                )
+                                onViewChange(it)
                         }
                     )
                     Spacer(modifier = Modifier.width(4.dp))
@@ -268,9 +289,9 @@ fun BookmarksSettingsSection(
 }
 
 @Composable
-fun NoBookmarksMessage() {
+fun NoBookmarksMessage(modifier: Modifier = Modifier) {
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
