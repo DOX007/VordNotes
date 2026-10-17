@@ -348,7 +348,20 @@ fun MyBrainApp(
                             val args = it.toRoute<Screen.ScheduleScreen>()
                             ScheduleScreen(
                                 navController = navController,
-                                folderIds = args.folderIds
+                                folderIds = args.folderIds,
+                                onCreateNoteForEntry = { entry ->
+                                    val title = if (entry.room.isBlank()) {
+                                        entry.patientName
+                                    } else {
+                                        "${entry.patientName}- rum ${entry.room}"
+                                    }
+                                    navController.navigate(
+                                        Screen.NotesScreen(
+                                            addNote = true,
+                                            prefillNoteTitle = title
+                                        )
+                                    )
+                                }
                             )
                         }
                         composable<Screen.ImportExportScreen>(

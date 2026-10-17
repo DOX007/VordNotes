@@ -37,11 +37,8 @@ fun SpaceCard(
     onClick: () -> Unit = {}
 ) {
     val shape = RoundedCornerShape(15.dp)
-
-    // 🔹 BOOSTA FÄRGEN FÖR DARK MODE + GLAS
     val boostedColor = backgroundColor.boost()
 
-    // 🔹 BLÅ GRADIENT (SYNLIG, DJUP, PREMIUM)
     val gradient = Brush.verticalGradient(
         colors = listOf(
             boostedColor.copy(alpha = 0.55f),
@@ -49,7 +46,6 @@ fun SpaceCard(
         )
     )
 
-    // 🔥 Heartbeat logic (active only if isPulsing == true)
     var heartbeatPhase by remember { mutableStateOf(false) }
 
     LaunchedEffect(isPulsing) {
@@ -88,8 +84,6 @@ fun SpaceCard(
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-
-            // 🔹 IKON / AVATAR (VÄNSTER) - MED PULSING
             Box(
                 modifier = Modifier
                     .size(90.dp)
@@ -107,7 +101,6 @@ fun SpaceCard(
 
             Spacer(modifier = Modifier.width(30.dp))
 
-            // 🔹 TEXT (HÖGER)
             Column(
                 modifier = Modifier.weight(1f)
             ) {
@@ -130,20 +123,11 @@ fun SpaceCard(
     }
 }
 
-/* ---------------------------------------------------
-   FÄRGBOST (VIKTIG FÖR GLAS + DARK MODE)
----------------------------------------------------- */
-
 fun Color.boost(): Color = copy(
-
     red = (red * 1.1f).coerceAtMost(1f),
     green = (green * 1.1f).coerceAtMost(1f),
     blue = (blue * 1.1f).coerceAtMost(1f)
 )
-
-/* ---------------------------------------------------
-   PREVIEW
----------------------------------------------------- */
 
 @Preview(showBackground = true)
 @Composable

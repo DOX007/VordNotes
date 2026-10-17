@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -32,6 +33,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
@@ -49,6 +51,7 @@ import java.util.Calendar
 fun ScheduleScreen(
     navController: NavHostController,
     folderIds: List<Int>,
+    onCreateNoteForEntry: (ScheduleEntry) -> Unit = {},
     viewModel: ScheduleViewModel = koinViewModel()
 ) {
     val state = viewModel.uiState
@@ -206,7 +209,15 @@ fun ScheduleScreen(
                                     ""
                                 }
 
-                                Column {
+                                Column(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .pointerInput(entry) {
+                                            detectTapGestures(
+                                                onDoubleTap = { onCreateNoteForEntry(entry) }
+                                            )
+                                        }
+                                ) {
                                     Text(
                                         text = "${entry.patientName}$room – ${entry.task}",
                                         style = MaterialTheme.typography.bodyLarge,

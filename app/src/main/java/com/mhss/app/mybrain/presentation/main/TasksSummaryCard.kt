@@ -20,7 +20,9 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.mhss.app.domain.model.Priority
 import com.mhss.app.domain.model.Task
 import com.mhss.app.ui.R
 import com.mhss.app.ui.theme.Blue
@@ -32,6 +34,9 @@ fun TasksSummaryCard(
 ) {
     Card(
         shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.55f)
+        ),
         elevation = CardDefaults.elevatedCardElevation(
             8.dp
         ),
@@ -41,7 +46,8 @@ fun TasksSummaryCard(
     ) {
         val percentage by remember(tasks) {
             derivedStateOf {
-                tasks.count { it.isCompleted }.toFloat() / tasks.size
+                if (tasks.isEmpty()) 0f
+                else tasks.count { it.isCompleted }.toFloat() / tasks.size
             }
         }
         Column {
@@ -114,5 +120,45 @@ fun TasksSummaryCard(
                 )
             }
         }
+    }
+}
+
+@Preview(showBackground = true, name = "Med uppgifter")
+@Composable
+private fun TasksSummaryCardPreview() {
+    MaterialTheme {
+        TasksSummaryCard(
+            tasks = listOf(
+                Task(
+                    title = "Task 1",
+                    description = "Beskrivning",
+                    dueDate = 1666999999999L,
+                    priority = Priority.MEDIUM,
+                    isCompleted = true
+                ),
+                Task(
+                    title = "Task 2",
+                    description = "Beskrivning",
+                    dueDate = 1666999999999L,
+                    priority = Priority.HIGH,
+                    isCompleted = false
+                ),
+                Task(
+                    title = "Task 3",
+                    description = "Beskrivning",
+                    dueDate = 1666999999999L,
+                    priority = Priority.LOW,
+                    isCompleted = true
+                )
+            )
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Tom")
+@Composable
+private fun TasksSummaryCardEmptyPreview() {
+    MaterialTheme {
+        TasksSummaryCard(tasks = emptyList())
     }
 }

@@ -191,7 +191,10 @@ fun NoteFolderDetailsScreen(
                                 )
                             },
                         shape = RoundedCornerShape(14.dp),
-                        elevation = CardDefaults.elevatedCardElevation(12.dp)
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f)
+                        ),
+                        elevation = CardDefaults.cardElevation(0.dp)
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -289,9 +292,10 @@ fun NoteFolderDetailsScreen(
                                 scaleX = if (isDragging) 1.04f else 1f
                                 scaleY = if (isDragging) 1.04f else 1f
 
-                                shadowElevation = if (isDragging) 24f else 16f
+                                shadowElevation = 0f
                                 shape = RoundedCornerShape(20.dp)
                                 clip = false
+
                             }
                             .pointerInput(note.id) {
                                 detectDragGesturesAfterLongPress(
