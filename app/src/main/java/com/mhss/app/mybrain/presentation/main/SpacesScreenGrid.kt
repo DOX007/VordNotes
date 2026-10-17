@@ -73,7 +73,7 @@ fun SpacesScreenGrid(
                         title = stringResource(R.string.notes),
                         subtitle = stringResource(R.string.notes_subtitle),
                         image = R.drawable.notes_img,
-                        backgroundColor = Color(0xFF3F51B5),
+                        backgroundColor = Color(0xFF293547),
                         iconSize = GridIconSize,
                         modifier = Modifier
                             .weight(1f)
@@ -86,7 +86,7 @@ fun SpacesScreenGrid(
                         title = stringResource(R.string.tasks),
                         subtitle = stringResource(R.string.tasks_subtitle),
                         image = R.drawable.tasks_img,
-                        backgroundColor = Color(0xFF3F51B5),
+                        backgroundColor = Color(0xFF293547),
                         iconSize = GridIconSize,
                         modifier = Modifier
                             .weight(1f)
@@ -108,7 +108,7 @@ fun SpacesScreenGrid(
                         title = stringResource(R.string.diary),
                         subtitle = stringResource(R.string.diary_subtitle),
                         image = R.drawable.diary_img,
-                        backgroundColor = Color(0xFF3F51B5),
+                        backgroundColor = Color(0xFF293547),
                         isPulsing = true,
                         iconSize = GridIconSize,
                         modifier = Modifier
@@ -122,7 +122,7 @@ fun SpacesScreenGrid(
                         title = stringResource(R.string.calendar),
                         subtitle = stringResource(R.string.calendar_subtitle),
                         image = R.drawable.calendar_img,
-                        backgroundColor = Color(0xFF3F51B5),
+                        backgroundColor = Color(0xFF293547),
                         iconSize = GridIconSize,
                         modifier = Modifier
                             .weight(1f)
@@ -138,7 +138,7 @@ fun SpacesScreenGrid(
                     title = stringResource(R.string.bookmarks),
                     subtitle = stringResource(R.string.bookmarks_subtitle),
                     image = R.drawable.bookmarks_img,
-                    backgroundColor = Color(0xFF3F51B5),
+                    backgroundColor = Color(0xFF293547),
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(WideCardHeight),
@@ -153,7 +153,7 @@ fun SpacesScreenGrid(
                     title = stringResource(R.string.assistant),
                     subtitle = stringResource(R.string.assistant_subtitle),
                     image = R.drawable.ai_chat_img,
-                    backgroundColor = Color(0xFF3F51B5),
+                    backgroundColor = Color(0xFF293547),
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(WideCardHeight),
