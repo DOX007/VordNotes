@@ -21,6 +21,9 @@ import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.navigation.NavHostController
 import com.mhss.app.domain.model.DiaryEntry
 import com.mhss.app.domain.model.Mood
+import com.mhss.app.presentation.components.AiActionsRow
+import com.mhss.app.presentation.components.AiResultOverlay
+import com.mhss.app.presentation.components.rememberOcrLauncher
 import com.mhss.app.ui.R
 import com.mhss.app.ui.components.common.DateTimeDialog
 import com.mhss.app.ui.components.common.MyBrainAppBar
@@ -189,7 +192,18 @@ fun DiaryEntryDetailsScreen(
                 }
             }
 
-            Spacer(Modifier.height(8.dp))
+            val ocr = rememberOcrLauncher(
+                actions = viewModel.aiActions,
+                content = content,
+                onContentChange = { content = it }
+            )
+            AiActionsRow(
+                onSummarize = { viewModel.onEvent(DiaryDetailsEvent.Summarize(content)) },
+                onAutoFormat = { viewModel.onEvent(DiaryDetailsEvent.AutoFormat(content)) },
+                onCorrectSpelling = { viewModel.onEvent(DiaryDetailsEvent.CorrectSpelling(content)) },
+                onCameraClick = ocr.onCameraClick,
+                onGalleryClick = ocr.onGalleryClick
+            )
 
             if (readingMode) {
                 Markdown(
@@ -224,6 +238,12 @@ fun DiaryEntryDetailsScreen(
                 )
             }
         }
+
+        AiResultOverlay(
+            actions = viewModel.aiActions,
+            content = content,
+            onContentChange = { content = it }
+        )
 
         if (showDateDialog) {
             DateTimeDialog(
